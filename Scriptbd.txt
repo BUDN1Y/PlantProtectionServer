@@ -1,0 +1,1495 @@
+USE [master]
+GO
+/****** Object:  Database [PlantProtectionDB]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE DATABASE [PlantProtectionDB]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'PlantProtectionDB', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL17.MSSQLSERVER\MSSQL\DATA\PlantProtectionDB.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'PlantProtectionDB_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL17.MSSQLSERVER\MSSQL\DATA\PlantProtectionDB_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [PlantProtectionDB] SET COMPATIBILITY_LEVEL = 170
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [PlantProtectionDB].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [PlantProtectionDB] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [PlantProtectionDB] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [PlantProtectionDB] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET  ENABLE_BROKER 
+GO
+ALTER DATABASE [PlantProtectionDB] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [PlantProtectionDB] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET RECOVERY FULL 
+GO
+ALTER DATABASE [PlantProtectionDB] SET  MULTI_USER 
+GO
+ALTER DATABASE [PlantProtectionDB] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [PlantProtectionDB] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [PlantProtectionDB] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [PlantProtectionDB] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [PlantProtectionDB] SET OPTIMIZED_LOCKING = OFF 
+GO
+ALTER DATABASE [PlantProtectionDB] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [PlantProtectionDB] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [PlantProtectionDB] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [PlantProtectionDB]
+GO
+/****** Object:  Table [dbo].[audit_log]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[audit_log](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[user_id] [int] NOT NULL,
+	[action_type] [nvarchar](50) NOT NULL,
+	[entity_type] [nvarchar](50) NOT NULL,
+	[entity_id] [int] NOT NULL,
+	[old_data] [nvarchar](max) NULL,
+	[new_data] [nvarchar](max) NULL,
+	[action_time] [datetime] NULL,
+	[ip_address] [nvarchar](45) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[batch_step_executions]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[batch_step_executions](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[batch_id] [int] NOT NULL,
+	[tech_step_id] [int] NOT NULL,
+	[status_id] [int] NOT NULL,
+	[started_at] [datetime] NULL,
+	[finished_at] [datetime] NULL,
+	[started_by] [int] NULL,
+	[finished_by] [int] NULL,
+	[actual_temp] [decimal](8, 2) NULL,
+	[actual_pressure] [decimal](8, 2) NULL,
+	[actual_time] [int] NULL,
+	[comment] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[batch_used_materials]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[batch_used_materials](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[batch_id] [int] NOT NULL,
+	[raw_material_batch_id] [int] NOT NULL,
+	[quantity_used] [decimal](12, 2) NOT NULL,
+	[unit] [nvarchar](20) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[departments]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[departments](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](100) NOT NULL,
+	[description] [nvarchar](255) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[deviations]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[deviations](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[batch_id] [int] NOT NULL,
+	[step_execution_id] [int] NULL,
+	[reported_by] [int] NOT NULL,
+	[parameter_name] [nvarchar](100) NOT NULL,
+	[planned_value] [decimal](12, 4) NULL,
+	[actual_value] [decimal](12, 4) NULL,
+	[severity] [nvarchar](20) NULL,
+	[description] [nvarchar](max) NULL,
+	[reported_at] [datetime] NULL,
+	[status_id] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[extruder_events]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[extruder_events](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[batch_id] [int] NOT NULL,
+	[zone] [nvarchar](50) NULL,
+	[parameter_name] [nvarchar](50) NOT NULL,
+	[value] [decimal](12, 4) NULL,
+	[status] [nvarchar](20) NULL,
+	[event_time] [datetime] NULL,
+	[description] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[lab_test_parameters]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[lab_test_parameters](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lab_test_id] [int] NOT NULL,
+	[parameter_name] [nvarchar](100) NOT NULL,
+	[unit] [nvarchar](20) NULL,
+	[norm_min] [decimal](12, 4) NULL,
+	[norm_max] [decimal](12, 4) NULL,
+	[actual_value] [decimal](12, 4) NULL,
+	[result_status] [nvarchar](20) NULL,
+	[notes] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[lab_tests]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[lab_tests](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[test_number] [nvarchar](50) NOT NULL,
+	[target_type] [nvarchar](20) NOT NULL,
+	[target_id] [int] NOT NULL,
+	[test_type] [nvarchar](50) NOT NULL,
+	[assigned_at] [datetime] NULL,
+	[completed_at] [datetime] NULL,
+	[assigned_to] [int] NULL,
+	[performed_by] [int] NULL,
+	[status_id] [int] NOT NULL,
+	[priority] [nvarchar](20) NULL,
+	[comment] [nvarchar](max) NULL,
+	[decision] [nvarchar](20) NULL,
+	[decision_reason] [nvarchar](max) NULL,
+	[decided_at] [datetime] NULL,
+	[decided_by] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[production_batches]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[production_batches](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[batch_number] [nvarchar](50) NOT NULL,
+	[order_id] [int] NOT NULL,
+	[product_id] [int] NOT NULL,
+	[recipe_version_id] [int] NOT NULL,
+	[tech_map_version_id] [int] NOT NULL,
+	[start_date] [date] NULL,
+	[end_date] [date] NULL,
+	[status_id] [int] NOT NULL,
+	[current_step_id] [int] NULL,
+	[extruder_program_id] [int] NULL,
+	[created_at] [datetime] NULL,
+	[updated_at] [datetime] NULL,
+	[lab_decision] [nvarchar](20) NULL,
+	[lab_comment] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[production_orders]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[production_orders](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[order_number] [nvarchar](50) NOT NULL,
+	[product_id] [int] NOT NULL,
+	[recipe_id] [int] NOT NULL,
+	[tech_map_id] [int] NOT NULL,
+	[planned_quantity] [decimal](12, 2) NOT NULL,
+	[unit] [nvarchar](20) NOT NULL,
+	[planned_start_date] [date] NULL,
+	[planned_end_date] [date] NULL,
+	[status_id] [int] NOT NULL,
+	[created_by] [int] NOT NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[products]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[products](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[code] [nvarchar](50) NOT NULL,
+	[name] [nvarchar](200) NOT NULL,
+	[type] [nvarchar](50) NULL,
+	[release_form] [nvarchar](50) NULL,
+	[status_id] [int] NOT NULL,
+	[active_recipe_id] [int] NULL,
+	[active_tech_map_id] [int] NULL,
+	[created_at] [datetime] NULL,
+	[updated_at] [datetime] NULL,
+	[comment] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[raw_material_batches]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[raw_material_batches](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[batch_number] [nvarchar](50) NOT NULL,
+	[raw_material_id] [int] NOT NULL,
+	[supplier] [nvarchar](100) NULL,
+	[receipt_date] [date] NOT NULL,
+	[quantity] [decimal](12, 2) NOT NULL,
+	[unit] [nvarchar](20) NOT NULL,
+	[storage_location] [nvarchar](50) NULL,
+	[status_id] [int] NOT NULL,
+	[created_at] [datetime] NULL,
+	[updated_at] [datetime] NULL,
+	[last_test_id] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[raw_materials]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[raw_materials](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[code] [nvarchar](50) NOT NULL,
+	[name] [nvarchar](200) NOT NULL,
+	[category] [nvarchar](50) NULL,
+	[unit] [nvarchar](20) NOT NULL,
+	[standard_price] [decimal](10, 2) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[recipe_components]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[recipe_components](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[recipe_id] [int] NOT NULL,
+	[raw_material_id] [int] NOT NULL,
+	[percentage] [decimal](5, 2) NOT NULL,
+	[tolerance_min] [decimal](5, 2) NULL,
+	[tolerance_max] [decimal](5, 2) NULL,
+	[load_order] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[recipes]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[recipes](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[product_id] [int] NOT NULL,
+	[version] [int] NOT NULL,
+	[status_id] [int] NOT NULL,
+	[author_id] [int] NOT NULL,
+	[creation_date] [date] NULL,
+	[approval_date] [date] NULL,
+	[comments] [nvarchar](max) NULL,
+	[total_percent] [decimal](5, 2) NULL,
+	[is_active] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[roles]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[roles](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](50) NOT NULL,
+	[description] [nvarchar](255) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[status_history]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[status_history](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[entity_type] [nvarchar](30) NOT NULL,
+	[entity_id] [int] NOT NULL,
+	[old_status_id] [int] NULL,
+	[new_status_id] [int] NOT NULL,
+	[changed_by] [int] NOT NULL,
+	[changed_at] [datetime] NULL,
+	[comment] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[statuses]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[statuses](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[code] [nvarchar](30) NOT NULL,
+	[name] [nvarchar](100) NOT NULL,
+	[entity_type] [nvarchar](30) NOT NULL,
+	[description] [nvarchar](255) NULL,
+	[color] [nvarchar](20) NULL,
+	[sort_order] [int] NULL,
+	[is_default] [bit] NULL,
+	[is_final] [bit] NULL,
+	[is_active] [bit] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[tech_map_steps]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[tech_map_steps](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[tech_map_id] [int] NOT NULL,
+	[step_number] [int] NOT NULL,
+	[name] [nvarchar](100) NOT NULL,
+	[step_type] [nvarchar](50) NOT NULL,
+	[instruction] [nvarchar](max) NULL,
+	[planned_temp] [decimal](8, 2) NULL,
+	[planned_pressure] [decimal](8, 2) NULL,
+	[planned_time_min] [int] NULL,
+	[planned_time_max] [int] NULL,
+	[tolerance_temp_min] [decimal](8, 2) NULL,
+	[tolerance_temp_max] [decimal](8, 2) NULL,
+	[tolerance_pressure_min] [decimal](8, 2) NULL,
+	[tolerance_pressure_max] [decimal](8, 2) NULL,
+	[is_mandatory] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[tech_maps]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[tech_maps](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[product_id] [int] NOT NULL,
+	[version] [int] NOT NULL,
+	[status_id] [int] NOT NULL,
+	[author_id] [int] NOT NULL,
+	[creation_date] [date] NULL,
+	[approval_date] [date] NULL,
+	[description] [nvarchar](max) NULL,
+	[is_active] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[users]    Script Date: 01.09.2026 19:44:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[users](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[login] [nvarchar](50) NOT NULL,
+	[password_hash] [nvarchar](255) NOT NULL,
+	[full_name] [nvarchar](150) NOT NULL,
+	[role_id] [int] NOT NULL,
+	[department_id] [int] NULL,
+	[phone] [nvarchar](20) NULL,
+	[is_active] [bit] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET IDENTITY_INSERT [dbo].[audit_log] ON 
+GO
+INSERT [dbo].[audit_log] ([id], [user_id], [action_type], [entity_type], [entity_id], [old_data], [new_data], [action_time], [ip_address]) VALUES (1, 1, N'create', N'product', 1, NULL, N'{"code":"HERB-001","name":"Гербицид \"Чистое поле\"","status":"active"}', CAST(N'2026-07-26T18:07:02.447' AS DateTime), NULL)
+GO
+INSERT [dbo].[audit_log] ([id], [user_id], [action_type], [entity_type], [entity_id], [old_data], [new_data], [action_time], [ip_address]) VALUES (2, 1, N'create', N'recipe', 1, NULL, N'{"product_id":1,"version":1,"status":"approved"}', CAST(N'2026-07-26T18:07:02.447' AS DateTime), NULL)
+GO
+INSERT [dbo].[audit_log] ([id], [user_id], [action_type], [entity_type], [entity_id], [old_data], [new_data], [action_time], [ip_address]) VALUES (3, 1, N'approve', N'recipe', 1, NULL, N'{"status":"approved","approval_date":"2026-01-20"}', CAST(N'2026-07-26T18:07:02.447' AS DateTime), NULL)
+GO
+INSERT [dbo].[audit_log] ([id], [user_id], [action_type], [entity_type], [entity_id], [old_data], [new_data], [action_time], [ip_address]) VALUES (4, 2, N'start', N'batch_step', 1, NULL, N'{"step_id":1,"status":"in_progress"}', CAST(N'2026-07-26T18:07:02.447' AS DateTime), NULL)
+GO
+INSERT [dbo].[audit_log] ([id], [user_id], [action_type], [entity_type], [entity_id], [old_data], [new_data], [action_time], [ip_address]) VALUES (5, 3, N'complete', N'lab_test', 1, NULL, N'{"decision":"approved"}', CAST(N'2026-07-26T18:07:02.447' AS DateTime), NULL)
+GO
+INSERT [dbo].[audit_log] ([id], [user_id], [action_type], [entity_type], [entity_id], [old_data], [new_data], [action_time], [ip_address]) VALUES (6, 3, N'complete', N'lab_test', 4, NULL, N'{"decision":"blocked","reason":"Превышение влажности"}', CAST(N'2026-07-26T18:07:02.447' AS DateTime), NULL)
+GO
+SET IDENTITY_INSERT [dbo].[audit_log] OFF
+GO
+SET IDENTITY_INSERT [dbo].[batch_step_executions] ON 
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (1, 1, 1, 33, CAST(N'2026-02-02T08:00:00.000' AS DateTime), CAST(N'2026-02-02T08:20:00.000' AS DateTime), 2, 2, NULL, NULL, 20, N'Загрузка выполнена')
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (2, 1, 2, 32, CAST(N'2026-02-02T08:30:00.000' AS DateTime), NULL, 2, NULL, CAST(46.50 AS Decimal(8, 2)), NULL, NULL, N'Смешивание продолжается')
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (3, 2, 1, 33, CAST(N'2026-05-02T09:00:00.000' AS DateTime), CAST(N'2026-05-02T09:15:00.000' AS DateTime), 2, 2, NULL, NULL, 15, N'OK')
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (4, 2, 2, 33, CAST(N'2026-05-02T09:20:00.000' AS DateTime), CAST(N'2026-05-02T10:00:00.000' AS DateTime), 2, 2, CAST(45.20 AS Decimal(8, 2)), NULL, 40, N'Температура в норме')
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (5, 2, 3, 33, CAST(N'2026-05-02T10:10:00.000' AS DateTime), CAST(N'2026-05-02T12:00:00.000' AS DateTime), 2, 2, CAST(24.50 AS Decimal(8, 2)), NULL, 110, N'Выдержка завершена')
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (6, 2, 4, 33, CAST(N'2026-05-02T12:10:00.000' AS DateTime), CAST(N'2026-05-02T12:30:00.000' AS DateTime), 2, 2, NULL, NULL, 20, N'Фасовка выполнена')
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (7, 3, 1, 33, CAST(N'2026-11-02T10:00:00.000' AS DateTime), CAST(N'2026-11-02T10:15:00.000' AS DateTime), 2, 2, NULL, NULL, 15, N'Сырье подготовлено')
+GO
+INSERT [dbo].[batch_step_executions] ([id], [batch_id], [tech_step_id], [status_id], [started_at], [finished_at], [started_by], [finished_by], [actual_temp], [actual_pressure], [actual_time], [comment]) VALUES (8, 3, 2, 32, CAST(N'2026-11-02T10:20:00.000' AS DateTime), NULL, 2, NULL, CAST(51.20 AS Decimal(8, 2)), CAST(1.45 AS Decimal(8, 2)), NULL, N'Смешивание')
+GO
+SET IDENTITY_INSERT [dbo].[batch_step_executions] OFF
+GO
+SET IDENTITY_INSERT [dbo].[batch_used_materials] ON 
+GO
+INSERT [dbo].[batch_used_materials] ([id], [batch_id], [raw_material_batch_id], [quantity_used], [unit]) VALUES (1, 1, 1, CAST(150.00 AS Decimal(12, 2)), N'кг')
+GO
+INSERT [dbo].[batch_used_materials] ([id], [batch_id], [raw_material_batch_id], [quantity_used], [unit]) VALUES (2, 1, 2, CAST(100.00 AS Decimal(12, 2)), N'кг')
+GO
+INSERT [dbo].[batch_used_materials] ([id], [batch_id], [raw_material_batch_id], [quantity_used], [unit]) VALUES (3, 2, 1, CAST(100.00 AS Decimal(12, 2)), N'кг')
+GO
+INSERT [dbo].[batch_used_materials] ([id], [batch_id], [raw_material_batch_id], [quantity_used], [unit]) VALUES (4, 2, 2, CAST(80.00 AS Decimal(12, 2)), N'кг')
+GO
+INSERT [dbo].[batch_used_materials] ([id], [batch_id], [raw_material_batch_id], [quantity_used], [unit]) VALUES (5, 3, 5, CAST(100.00 AS Decimal(12, 2)), N'кг')
+GO
+INSERT [dbo].[batch_used_materials] ([id], [batch_id], [raw_material_batch_id], [quantity_used], [unit]) VALUES (6, 3, 6, CAST(80.00 AS Decimal(12, 2)), N'кг')
+GO
+SET IDENTITY_INSERT [dbo].[batch_used_materials] OFF
+GO
+SET IDENTITY_INSERT [dbo].[departments] ON 
+GO
+INSERT [dbo].[departments] ([id], [name], [description]) VALUES (1, N'Технологический отдел', N'Разработка рецептур и технологических карт')
+GO
+INSERT [dbo].[departments] ([id], [name], [description]) VALUES (2, N'Производственный цех №1', N'Производство средств защиты растений')
+GO
+INSERT [dbo].[departments] ([id], [name], [description]) VALUES (3, N'Лаборатория качества', N'Контроль качества сырья и готовой продукции')
+GO
+INSERT [dbo].[departments] ([id], [name], [description]) VALUES (4, N'ИТ-отдел', N'Администрирование системы')
+GO
+SET IDENTITY_INSERT [dbo].[departments] OFF
+GO
+SET IDENTITY_INSERT [dbo].[deviations] ON 
+GO
+INSERT [dbo].[deviations] ([id], [batch_id], [step_execution_id], [reported_by], [parameter_name], [planned_value], [actual_value], [severity], [description], [reported_at], [status_id]) VALUES (1, 1, 2, 2, N'Температура смешивания', CAST(45.0000 AS Decimal(12, 4)), CAST(46.5000 AS Decimal(12, 4)), N'warning', N'Незначительное превышение температуры', CAST(N'2026-07-26T18:07:02.423' AS DateTime), 36)
+GO
+SET IDENTITY_INSERT [dbo].[deviations] OFF
+GO
+SET IDENTITY_INSERT [dbo].[extruder_events] ON 
+GO
+INSERT [dbo].[extruder_events] ([id], [batch_id], [zone], [parameter_name], [value], [status], [event_time], [description]) VALUES (1, 3, N'Зона 1', N'temperature', CAST(78.5000 AS Decimal(12, 4)), N'warning', CAST(N'2026-07-26T18:07:02.437' AS DateTime), N'Температура ниже нормы')
+GO
+INSERT [dbo].[extruder_events] ([id], [batch_id], [zone], [parameter_name], [value], [status], [event_time], [description]) VALUES (2, 3, N'Зона 2', N'pressure', CAST(3.4500 AS Decimal(12, 4)), N'normal', CAST(N'2026-07-26T18:07:02.437' AS DateTime), N'Давление в норме')
+GO
+INSERT [dbo].[extruder_events] ([id], [batch_id], [zone], [parameter_name], [value], [status], [event_time], [description]) VALUES (3, 3, N'Зона 3', N'temperature', CAST(79.2000 AS Decimal(12, 4)), N'normal', CAST(N'2026-07-26T18:07:02.437' AS DateTime), N'Температура нормализовалась')
+GO
+SET IDENTITY_INSERT [dbo].[extruder_events] OFF
+GO
+SET IDENTITY_INSERT [dbo].[lab_test_parameters] ON 
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (1, 1, N'Массовая доля активного вещества', N'%', CAST(98.0000 AS Decimal(12, 4)), CAST(100.0000 AS Decimal(12, 4)), CAST(99.2000 AS Decimal(12, 4)), N'in_spec', NULL)
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (2, 1, N'Влажность', N'%', NULL, CAST(0.5000 AS Decimal(12, 4)), CAST(0.3000 AS Decimal(12, 4)), N'in_spec', NULL)
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (3, 1, N'pH', NULL, CAST(6.0000 AS Decimal(12, 4)), CAST(8.0000 AS Decimal(12, 4)), CAST(7.2000 AS Decimal(12, 4)), N'in_spec', NULL)
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (4, 2, N'Массовая доля активного вещества', N'%', CAST(98.0000 AS Decimal(12, 4)), CAST(100.0000 AS Decimal(12, 4)), CAST(98.5000 AS Decimal(12, 4)), N'in_spec', NULL)
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (5, 2, N'Влажность', N'%', NULL, CAST(1.0000 AS Decimal(12, 4)), CAST(0.8000 AS Decimal(12, 4)), N'in_spec', NULL)
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (6, 2, N'Плотность', N'г/мл', CAST(1.0000 AS Decimal(12, 4)), CAST(1.1000 AS Decimal(12, 4)), CAST(1.0500 AS Decimal(12, 4)), N'in_spec', NULL)
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (7, 4, N'Массовая доля активного вещества', N'%', CAST(98.0000 AS Decimal(12, 4)), CAST(100.0000 AS Decimal(12, 4)), CAST(99.0000 AS Decimal(12, 4)), N'in_spec', NULL)
+GO
+INSERT [dbo].[lab_test_parameters] ([id], [lab_test_id], [parameter_name], [unit], [norm_min], [norm_max], [actual_value], [result_status], [notes]) VALUES (8, 4, N'Влажность', N'%', NULL, CAST(5.0000 AS Decimal(12, 4)), CAST(8.5000 AS Decimal(12, 4)), N'out_of_spec', N'Превышена норма влажности')
+GO
+SET IDENTITY_INSERT [dbo].[lab_test_parameters] OFF
+GO
+SET IDENTITY_INSERT [dbo].[lab_tests] ON 
+GO
+INSERT [dbo].[lab_tests] ([id], [test_number], [target_type], [target_id], [test_type], [assigned_at], [completed_at], [assigned_to], [performed_by], [status_id], [priority], [comment], [decision], [decision_reason], [decided_at], [decided_by]) VALUES (1, N'LT-2026-001', N'raw_material', 1, N'Входной контроль', CAST(N'2026-07-26T18:07:02.350' AS DateTime), CAST(N'2026-07-26T23:07:02.350' AS DateTime), 3, 3, 29, N'normal', NULL, N'approved', N'Соответствует спецификации', CAST(N'2026-07-26T23:07:02.350' AS DateTime), 3)
+GO
+INSERT [dbo].[lab_tests] ([id], [test_number], [target_type], [target_id], [test_type], [assigned_at], [completed_at], [assigned_to], [performed_by], [status_id], [priority], [comment], [decision], [decision_reason], [decided_at], [decided_by]) VALUES (2, N'LT-2026-002', N'raw_material', 2, N'Входной контроль', CAST(N'2026-07-26T18:07:02.367' AS DateTime), CAST(N'2026-07-26T23:07:02.367' AS DateTime), 3, 3, 29, N'normal', NULL, N'approved', N'OK', CAST(N'2026-07-26T23:07:02.367' AS DateTime), 3)
+GO
+INSERT [dbo].[lab_tests] ([id], [test_number], [target_type], [target_id], [test_type], [assigned_at], [completed_at], [assigned_to], [performed_by], [status_id], [priority], [comment], [decision], [decision_reason], [decided_at], [decided_by]) VALUES (3, N'LT-2026-003', N'raw_material', 4, N'Входной контроль', CAST(N'2026-07-26T18:07:02.377' AS DateTime), NULL, 3, NULL, 28, N'urgent', NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[lab_tests] ([id], [test_number], [target_type], [target_id], [test_type], [assigned_at], [completed_at], [assigned_to], [performed_by], [status_id], [priority], [comment], [decision], [decision_reason], [decided_at], [decided_by]) VALUES (4, N'LT-2026-004', N'raw_material', 6, N'Входной контроль', CAST(N'2026-07-26T18:07:02.390' AS DateTime), CAST(N'2026-07-26T22:07:02.390' AS DateTime), 3, 3, 29, N'normal', NULL, N'blocked', N'Не соответствует по влажности (факт: 8.5%, норма: <5%)', CAST(N'2026-07-26T22:07:02.390' AS DateTime), 3)
+GO
+SET IDENTITY_INSERT [dbo].[lab_tests] OFF
+GO
+SET IDENTITY_INSERT [dbo].[production_batches] ON 
+GO
+INSERT [dbo].[production_batches] ([id], [batch_number], [order_id], [product_id], [recipe_version_id], [tech_map_version_id], [start_date], [end_date], [status_id], [current_step_id], [extruder_program_id], [created_at], [updated_at], [lab_decision], [lab_comment]) VALUES (1, N'PB-2026-001', 1, 1, 1, 1, CAST(N'2026-02-02' AS Date), NULL, 22, NULL, NULL, CAST(N'2026-07-26T18:07:02.247' AS DateTime), CAST(N'2026-07-26T18:07:02.247' AS DateTime), NULL, NULL)
+GO
+INSERT [dbo].[production_batches] ([id], [batch_number], [order_id], [product_id], [recipe_version_id], [tech_map_version_id], [start_date], [end_date], [status_id], [current_step_id], [extruder_program_id], [created_at], [updated_at], [lab_decision], [lab_comment]) VALUES (2, N'PB-2026-002', 1, 1, 1, 1, CAST(N'2026-02-05' AS Date), NULL, 24, NULL, NULL, CAST(N'2026-07-26T18:07:02.260' AS DateTime), CAST(N'2026-07-26T18:07:02.260' AS DateTime), N'approved', NULL)
+GO
+INSERT [dbo].[production_batches] ([id], [batch_number], [order_id], [product_id], [recipe_version_id], [tech_map_version_id], [start_date], [end_date], [status_id], [current_step_id], [extruder_program_id], [created_at], [updated_at], [lab_decision], [lab_comment]) VALUES (3, N'PB-2026-003', 2, 2, 2, 2, CAST(N'2026-02-11' AS Date), NULL, 21, NULL, NULL, CAST(N'2026-07-26T18:07:02.277' AS DateTime), CAST(N'2026-07-26T18:07:02.277' AS DateTime), NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[production_batches] OFF
+GO
+SET IDENTITY_INSERT [dbo].[production_orders] ON 
+GO
+INSERT [dbo].[production_orders] ([id], [order_number], [product_id], [recipe_id], [tech_map_id], [planned_quantity], [unit], [planned_start_date], [planned_end_date], [status_id], [created_by], [created_at]) VALUES (1, N'PO-2026-001', 1, 1, 1, CAST(1000.00 AS Decimal(12, 2)), N'л', CAST(N'2026-02-01' AS Date), CAST(N'2026-02-15' AS Date), 13, 1, CAST(N'2026-07-26T18:07:02.230' AS DateTime))
+GO
+INSERT [dbo].[production_orders] ([id], [order_number], [product_id], [recipe_id], [tech_map_id], [planned_quantity], [unit], [planned_start_date], [planned_end_date], [status_id], [created_by], [created_at]) VALUES (2, N'PO-2026-002', 2, 2, 2, CAST(500.00 AS Decimal(12, 2)), N'кг', CAST(N'2026-02-10' AS Date), CAST(N'2026-02-25' AS Date), 12, 1, CAST(N'2026-07-26T18:07:02.230' AS DateTime))
+GO
+SET IDENTITY_INSERT [dbo].[production_orders] OFF
+GO
+SET IDENTITY_INSERT [dbo].[products] ON 
+GO
+INSERT [dbo].[products] ([id], [code], [name], [type], [release_form], [status_id], [active_recipe_id], [active_tech_map_id], [created_at], [updated_at], [comment]) VALUES (1, N'HERB-001', N'Гербицид "Чистое поле"', N'гербицид', N'жидкость', 2, 1, 1, CAST(N'2026-07-26T18:07:02.043' AS DateTime), CAST(N'2026-07-26T18:07:02.043' AS DateTime), NULL)
+GO
+INSERT [dbo].[products] ([id], [code], [name], [type], [release_form], [status_id], [active_recipe_id], [active_tech_map_id], [created_at], [updated_at], [comment]) VALUES (2, N'FUNG-001', N'Фунгицид "Защитник"', N'фунгицид', N'порошок', 2, 2, 2, CAST(N'2026-07-26T18:07:02.043' AS DateTime), CAST(N'2026-07-26T18:07:02.043' AS DateTime), NULL)
+GO
+INSERT [dbo].[products] ([id], [code], [name], [type], [release_form], [status_id], [active_recipe_id], [active_tech_map_id], [created_at], [updated_at], [comment]) VALUES (3, N'INSECT-001', N'Инсектицид "Барьер"', N'инсектицид', N'гранулы', 1, NULL, NULL, CAST(N'2026-07-26T18:07:02.043' AS DateTime), CAST(N'2026-07-26T18:07:02.043' AS DateTime), NULL)
+GO
+INSERT [dbo].[products] ([id], [code], [name], [type], [release_form], [status_id], [active_recipe_id], [active_tech_map_id], [created_at], [updated_at], [comment]) VALUES (5, N'HERB-002', N'Гербицид "dasdsadas"', N'Гербицид', N'Порошок', 1, NULL, NULL, CAST(N'2026-08-25T22:05:09.533' AS DateTime), CAST(N'2026-08-25T22:05:09.540' AS DateTime), N'dasdsadsad')
+GO
+INSERT [dbo].[products] ([id], [code], [name], [type], [release_form], [status_id], [active_recipe_id], [active_tech_map_id], [created_at], [updated_at], [comment]) VALUES (6, N'INSECT-002', N'Инсектицид "cxzczx"', N'Инсектицид', N'Порошок', 9, NULL, NULL, CAST(N'2026-08-26T16:06:49.183' AS DateTime), CAST(N'2026-08-26T16:06:49.480' AS DateTime), N'cxzczxzcxcxczx')
+GO
+INSERT [dbo].[products] ([id], [code], [name], [type], [release_form], [status_id], [active_recipe_id], [active_tech_map_id], [created_at], [updated_at], [comment]) VALUES (7, N'HERB-003', N'Гербицид "fsdfsd"', N'Гербицид', N'Порошок', 9, NULL, NULL, CAST(N'2026-08-26T23:54:20.523' AS DateTime), CAST(N'2026-08-26T23:54:20.940' AS DateTime), N'safsdfsad')
+GO
+SET IDENTITY_INSERT [dbo].[products] OFF
+GO
+SET IDENTITY_INSERT [dbo].[raw_material_batches] ON 
+GO
+INSERT [dbo].[raw_material_batches] ([id], [batch_number], [raw_material_id], [supplier], [receipt_date], [quantity], [unit], [storage_location], [status_id], [created_at], [updated_at], [last_test_id]) VALUES (1, N'RM-2026-001', 1, N'ООО "АгроХим"', CAST(N'2026-02-01' AS Date), CAST(500.00 AS Decimal(12, 2)), N'кг', N'Склад А-1', 18, CAST(N'2026-07-26T18:07:02.207' AS DateTime), CAST(N'2026-07-26T18:07:02.207' AS DateTime), NULL)
+GO
+INSERT [dbo].[raw_material_batches] ([id], [batch_number], [raw_material_id], [supplier], [receipt_date], [quantity], [unit], [storage_location], [status_id], [created_at], [updated_at], [last_test_id]) VALUES (2, N'RM-2026-002', 2, N'ООО "ПАВ-Тех"', CAST(N'2026-02-05' AS Date), CAST(200.00 AS Decimal(12, 2)), N'кг', N'Склад А-2', 18, CAST(N'2026-07-26T18:07:02.207' AS DateTime), CAST(N'2026-07-26T18:07:02.207' AS DateTime), NULL)
+GO
+INSERT [dbo].[raw_material_batches] ([id], [batch_number], [raw_material_id], [supplier], [receipt_date], [quantity], [unit], [storage_location], [status_id], [created_at], [updated_at], [last_test_id]) VALUES (3, N'RM-2026-003', 3, N'ООО "Раствор"', CAST(N'2026-02-10' AS Date), CAST(300.00 AS Decimal(12, 2)), N'л', N'Склад А-3', 16, CAST(N'2026-07-26T18:07:02.207' AS DateTime), CAST(N'2026-07-26T18:07:02.207' AS DateTime), NULL)
+GO
+INSERT [dbo].[raw_material_batches] ([id], [batch_number], [raw_material_id], [supplier], [receipt_date], [quantity], [unit], [storage_location], [status_id], [created_at], [updated_at], [last_test_id]) VALUES (4, N'RM-2026-004', 4, N'ООО "АгроХим"', CAST(N'2026-02-12' AS Date), CAST(400.00 AS Decimal(12, 2)), N'кг', N'Склад Б-1', 17, CAST(N'2026-07-26T18:07:02.207' AS DateTime), CAST(N'2026-07-26T18:07:02.207' AS DateTime), NULL)
+GO
+INSERT [dbo].[raw_material_batches] ([id], [batch_number], [raw_material_id], [supplier], [receipt_date], [quantity], [unit], [storage_location], [status_id], [created_at], [updated_at], [last_test_id]) VALUES (5, N'RM-2026-005', 5, N'ООО "Наполнители"', CAST(N'2026-02-15' AS Date), CAST(600.00 AS Decimal(12, 2)), N'кг', N'Склад Б-2', 18, CAST(N'2026-07-26T18:07:02.207' AS DateTime), CAST(N'2026-07-26T18:07:02.207' AS DateTime), NULL)
+GO
+INSERT [dbo].[raw_material_batches] ([id], [batch_number], [raw_material_id], [supplier], [receipt_date], [quantity], [unit], [storage_location], [status_id], [created_at], [updated_at], [last_test_id]) VALUES (6, N'RM-2026-006', 6, N'ООО "ХимРеагент"', CAST(N'2026-02-18' AS Date), CAST(150.00 AS Decimal(12, 2)), N'кг', N'Склад Б-3', 19, CAST(N'2026-07-26T18:07:02.207' AS DateTime), CAST(N'2026-07-26T18:07:02.207' AS DateTime), NULL)
+GO
+INSERT [dbo].[raw_material_batches] ([id], [batch_number], [raw_material_id], [supplier], [receipt_date], [quantity], [unit], [storage_location], [status_id], [created_at], [updated_at], [last_test_id]) VALUES (7, N'RM-2026-007', 7, N'ООО "Инсект-Пром"', CAST(N'2026-02-20' AS Date), CAST(250.00 AS Decimal(12, 2)), N'кг', N'Склад В-1', 16, CAST(N'2026-07-26T18:07:02.207' AS DateTime), CAST(N'2026-07-26T18:07:02.207' AS DateTime), NULL)
+GO
+SET IDENTITY_INSERT [dbo].[raw_material_batches] OFF
+GO
+SET IDENTITY_INSERT [dbo].[raw_materials] ON 
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (1, N'RM-001', N'Глифосат', N'активное вещество', N'кг', CAST(450.00 AS Decimal(10, 2)))
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (2, N'RM-002', N'ПАВ (поверхностно-активное вещество)', N'вспомогательное', N'кг', CAST(120.00 AS Decimal(10, 2)))
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (3, N'RM-003', N'Растворитель', N'растворитель', N'л', CAST(80.00 AS Decimal(10, 2)))
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (4, N'RM-004', N'Манкоцеб', N'активное вещество', N'кг', CAST(320.00 AS Decimal(10, 2)))
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (5, N'RM-005', N'Наполнитель (каолин)', N'наполнитель', N'кг', CAST(25.00 AS Decimal(10, 2)))
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (6, N'RM-006', N'Смачиватель', N'вспомогательное', N'кг', CAST(95.00 AS Decimal(10, 2)))
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (7, N'RM-007', N'Имидаклоприд', N'активное вещество', N'кг', CAST(580.00 AS Decimal(10, 2)))
+GO
+INSERT [dbo].[raw_materials] ([id], [code], [name], [category], [unit], [standard_price]) VALUES (8, N'RM-008', N'Наполнитель (цеолит)', N'наполнитель', N'кг', CAST(30.00 AS Decimal(10, 2)))
+GO
+SET IDENTITY_INSERT [dbo].[raw_materials] OFF
+GO
+SET IDENTITY_INSERT [dbo].[recipe_components] ON 
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (1, 1, 1, CAST(45.00 AS Decimal(5, 2)), CAST(44.00 AS Decimal(5, 2)), CAST(46.00 AS Decimal(5, 2)), 1)
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (2, 1, 2, CAST(10.00 AS Decimal(5, 2)), CAST(9.50 AS Decimal(5, 2)), CAST(10.50 AS Decimal(5, 2)), 2)
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (3, 1, 3, CAST(45.00 AS Decimal(5, 2)), CAST(44.00 AS Decimal(5, 2)), CAST(46.00 AS Decimal(5, 2)), 3)
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (4, 2, 4, CAST(60.00 AS Decimal(5, 2)), CAST(59.00 AS Decimal(5, 2)), CAST(61.00 AS Decimal(5, 2)), 1)
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (5, 2, 5, CAST(30.00 AS Decimal(5, 2)), CAST(29.00 AS Decimal(5, 2)), CAST(31.00 AS Decimal(5, 2)), 2)
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (6, 2, 6, CAST(10.00 AS Decimal(5, 2)), CAST(9.50 AS Decimal(5, 2)), CAST(10.50 AS Decimal(5, 2)), 3)
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (7, 3, 7, CAST(40.00 AS Decimal(5, 2)), CAST(39.00 AS Decimal(5, 2)), CAST(41.00 AS Decimal(5, 2)), 1)
+GO
+INSERT [dbo].[recipe_components] ([id], [recipe_id], [raw_material_id], [percentage], [tolerance_min], [tolerance_max], [load_order]) VALUES (8, 3, 8, CAST(50.00 AS Decimal(5, 2)), CAST(49.00 AS Decimal(5, 2)), CAST(51.00 AS Decimal(5, 2)), 2)
+GO
+SET IDENTITY_INSERT [dbo].[recipe_components] OFF
+GO
+SET IDENTITY_INSERT [dbo].[recipes] ON 
+GO
+INSERT [dbo].[recipes] ([id], [product_id], [version], [status_id], [author_id], [creation_date], [approval_date], [comments], [total_percent], [is_active]) VALUES (1, 1, 1, 6, 1, CAST(N'2026-01-15' AS Date), CAST(N'2026-01-20' AS Date), N'Базовая рецептура гербицида', CAST(0.00 AS Decimal(5, 2)), 1)
+GO
+INSERT [dbo].[recipes] ([id], [product_id], [version], [status_id], [author_id], [creation_date], [approval_date], [comments], [total_percent], [is_active]) VALUES (2, 2, 1, 6, 1, CAST(N'2026-01-20' AS Date), CAST(N'2026-01-25' AS Date), N'Базовая рецептура фунгицида', CAST(0.00 AS Decimal(5, 2)), 1)
+GO
+INSERT [dbo].[recipes] ([id], [product_id], [version], [status_id], [author_id], [creation_date], [approval_date], [comments], [total_percent], [is_active]) VALUES (3, 3, 1, 4, 1, CAST(N'2026-02-01' AS Date), NULL, N'Разрабатывается новая рецептура', CAST(0.00 AS Decimal(5, 2)), 0)
+GO
+SET IDENTITY_INSERT [dbo].[recipes] OFF
+GO
+SET IDENTITY_INSERT [dbo].[roles] ON 
+GO
+INSERT [dbo].[roles] ([id], [name], [description]) VALUES (1, N'technologist', N'Технолог - управление рецептурами и производством')
+GO
+INSERT [dbo].[roles] ([id], [name], [description]) VALUES (2, N'operator', N'Аппаратчик - выполнение операций в цехе')
+GO
+INSERT [dbo].[roles] ([id], [name], [description]) VALUES (3, N'lab_technician', N'Лаборант - контроль качества')
+GO
+INSERT [dbo].[roles] ([id], [name], [description]) VALUES (4, N'admin', N'Администратор системы')
+GO
+INSERT [dbo].[roles] ([id], [name], [description]) VALUES (5, N'supervisor', N'Мастер смены')
+GO
+SET IDENTITY_INSERT [dbo].[roles] OFF
+GO
+SET IDENTITY_INSERT [dbo].[status_history] ON 
+GO
+INSERT [dbo].[status_history] ([id], [entity_type], [entity_id], [old_status_id], [new_status_id], [changed_by], [changed_at], [comment]) VALUES (1, N'product', 1, NULL, 1, 1, CAST(N'2026-07-26T18:07:02.477' AS DateTime), N'Создание продукта')
+GO
+INSERT [dbo].[status_history] ([id], [entity_type], [entity_id], [old_status_id], [new_status_id], [changed_by], [changed_at], [comment]) VALUES (2, N'product', 1, 1, 2, 1, CAST(N'2026-07-26T18:07:02.477' AS DateTime), N'Активация продукта')
+GO
+INSERT [dbo].[status_history] ([id], [entity_type], [entity_id], [old_status_id], [new_status_id], [changed_by], [changed_at], [comment]) VALUES (3, N'recipe', 1, 4, 6, 1, CAST(N'2026-07-26T18:07:02.477' AS DateTime), N'Утверждение рецептуры')
+GO
+INSERT [dbo].[status_history] ([id], [entity_type], [entity_id], [old_status_id], [new_status_id], [changed_by], [changed_at], [comment]) VALUES (4, N'production_batch', 1, 20, 22, 2, CAST(N'2026-07-26T18:07:02.477' AS DateTime), N'Запуск партии')
+GO
+INSERT [dbo].[status_history] ([id], [entity_type], [entity_id], [old_status_id], [new_status_id], [changed_by], [changed_at], [comment]) VALUES (5, N'production_batch', 2, 20, 24, 2, CAST(N'2026-07-26T18:07:02.477' AS DateTime), N'Завершение партии')
+GO
+SET IDENTITY_INSERT [dbo].[status_history] OFF
+GO
+SET IDENTITY_INSERT [dbo].[statuses] ON 
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (1, N'product_draft', N'Черновик', N'product', NULL, N'#999999', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (2, N'product_active', N'Активный', N'product', NULL, N'#00CC00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (3, N'product_archived', N'Архивирован', N'product', NULL, N'#999999', 3, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (4, N'recipe_draft', N'Черновик', N'recipe', NULL, N'#999999', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (5, N'recipe_pending', N'На согласовании', N'recipe', NULL, N'#FFAA00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (6, N'recipe_approved', N'Утверждена', N'recipe', NULL, N'#00CC00', 3, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (7, N'recipe_archived', N'Архивирована', N'recipe', NULL, N'#999999', 4, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (8, N'techmap_draft', N'Черновик', N'tech_map', NULL, N'#999999', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (9, N'techmap_pending', N'На согласовании', N'tech_map', NULL, N'#FFAA00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (10, N'techmap_approved', N'Утверждена', N'tech_map', NULL, N'#00CC00', 3, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (11, N'techmap_archived', N'Архивирована', N'tech_map', NULL, N'#999999', 4, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (12, N'order_planned', N'Запланирован', N'production_order', NULL, N'#AAAAAA', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (13, N'order_in_progress', N'В работе', N'production_order', NULL, N'#FFAA00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (14, N'order_completed', N'Завершен', N'production_order', NULL, N'#00CC00', 3, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (15, N'order_cancelled', N'Отменен', N'production_order', NULL, N'#999999', 4, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (16, N'rm_pending', N'Ожидает анализа', N'raw_material_batch', NULL, N'#AAAAAA', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (17, N'rm_in_progress', N'Анализируется', N'raw_material_batch', NULL, N'#FFAA00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (18, N'rm_approved', N'Разрешена к использованию', N'raw_material_batch', NULL, N'#00CC00', 3, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (19, N'rm_blocked', N'Заблокирована', N'raw_material_batch', NULL, N'#FF0000', 4, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (20, N'batch_planned', N'Запланирована', N'production_batch', NULL, N'#AAAAAA', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (21, N'batch_started', N'Запущена', N'production_batch', NULL, N'#00AAFF', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (22, N'batch_in_progress', N'В процессе', N'production_batch', NULL, N'#FFAA00', 3, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (23, N'batch_paused', N'Приостановлена', N'production_batch', NULL, N'#FF6600', 4, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (24, N'batch_completed', N'Завершена', N'production_batch', NULL, N'#00CC00', 5, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (25, N'batch_blocked', N'Заблокирована', N'production_batch', NULL, N'#FF0000', 6, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (26, N'batch_cancelled', N'Отменена', N'production_batch', NULL, N'#999999', 7, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (27, N'lab_created', N'Создано', N'lab_test', NULL, N'#AAAAAA', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (28, N'lab_in_progress', N'Выполняется', N'lab_test', NULL, N'#FFAA00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (29, N'lab_completed', N'Завершено', N'lab_test', NULL, N'#00CC00', 3, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (30, N'lab_cancelled', N'Отменено', N'lab_test', NULL, N'#999999', 4, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (31, N'step_pending', N'Ожидание', N'step', NULL, N'#AAAAAA', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (32, N'step_in_progress', N'Выполняется', N'step', NULL, N'#FFAA00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (33, N'step_completed', N'Завершен', N'step', NULL, N'#00CC00', 3, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (34, N'step_failed', N'Ошибка', N'step', NULL, N'#FF0000', 4, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (35, N'step_skipped', N'Пропущен', N'step', NULL, N'#999999', 5, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (36, N'dev_open', N'Открыто', N'deviation', NULL, N'#FF0000', 1, 1, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (37, N'dev_investigating', N'Расследуется', N'deviation', NULL, N'#FFAA00', 2, 0, 0, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (38, N'dev_resolved', N'Решено', N'deviation', NULL, N'#00CC00', 3, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+INSERT [dbo].[statuses] ([id], [code], [name], [entity_type], [description], [color], [sort_order], [is_default], [is_final], [is_active], [created_at]) VALUES (39, N'dev_closed', N'Закрыто', N'deviation', NULL, N'#999999', 4, 0, 1, 1, CAST(N'2026-07-26T18:07:01.993' AS DateTime))
+GO
+SET IDENTITY_INSERT [dbo].[statuses] OFF
+GO
+SET IDENTITY_INSERT [dbo].[tech_map_steps] ON 
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (1, 1, 1, N'Загрузка компонентов', N'mixing', N'Загрузить компоненты в смеситель согласно порядку', NULL, NULL, 15, 20, NULL, NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (2, 1, 2, N'Смешивание', N'mixing', N'Перемешивание до однородной массы', CAST(45.00 AS Decimal(8, 2)), NULL, 30, 45, CAST(42.00 AS Decimal(8, 2)), CAST(48.00 AS Decimal(8, 2)), NULL, NULL, 1)
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (3, 1, 3, N'Выдержка', N'holding', N'Выдержка для стабилизации', CAST(25.00 AS Decimal(8, 2)), NULL, 60, 120, CAST(23.00 AS Decimal(8, 2)), CAST(27.00 AS Decimal(8, 2)), NULL, NULL, 1)
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (4, 1, 4, N'Фасовка', N'cooling', N'Фасовка готового продукта', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (5, 2, 1, N'Подготовка сырья', N'mixing', N'Проверить сырье, просеять', NULL, NULL, 10, 15, NULL, NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (6, 2, 2, N'Смешивание компонентов', N'mixing', N'Смешать активное вещество с наполнителем', CAST(50.00 AS Decimal(8, 2)), CAST(1.50 AS Decimal(8, 2)), 25, 35, CAST(48.00 AS Decimal(8, 2)), CAST(52.00 AS Decimal(8, 2)), CAST(1.40 AS Decimal(8, 2)), CAST(1.60 AS Decimal(8, 2)), 1)
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (7, 2, 3, N'Экструзия', N'extrusion', N'Экструдирование через экструдер', CAST(80.00 AS Decimal(8, 2)), CAST(3.50 AS Decimal(8, 2)), 15, 20, CAST(77.00 AS Decimal(8, 2)), CAST(83.00 AS Decimal(8, 2)), CAST(3.30 AS Decimal(8, 2)), CAST(3.70 AS Decimal(8, 2)), 1)
+GO
+INSERT [dbo].[tech_map_steps] ([id], [tech_map_id], [step_number], [name], [step_type], [instruction], [planned_temp], [planned_pressure], [planned_time_min], [planned_time_max], [tolerance_temp_min], [tolerance_temp_max], [tolerance_pressure_min], [tolerance_pressure_max], [is_mandatory]) VALUES (8, 2, 4, N'Сушка', N'cooling', N'Сушка и охлаждение гранул', CAST(60.00 AS Decimal(8, 2)), NULL, 30, 45, CAST(57.00 AS Decimal(8, 2)), CAST(63.00 AS Decimal(8, 2)), NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[tech_map_steps] OFF
+GO
+SET IDENTITY_INSERT [dbo].[tech_maps] ON 
+GO
+INSERT [dbo].[tech_maps] ([id], [product_id], [version], [status_id], [author_id], [creation_date], [approval_date], [description], [is_active]) VALUES (1, 1, 1, 10, 1, CAST(N'2026-01-16' AS Date), CAST(N'2026-01-21' AS Date), N'Производство гербицида "Чистое поле"', 1)
+GO
+INSERT [dbo].[tech_maps] ([id], [product_id], [version], [status_id], [author_id], [creation_date], [approval_date], [description], [is_active]) VALUES (2, 2, 1, 10, 1, CAST(N'2026-01-21' AS Date), CAST(N'2026-01-26' AS Date), N'Производство фунгицида "Защитник"', 1)
+GO
+INSERT [dbo].[tech_maps] ([id], [product_id], [version], [status_id], [author_id], [creation_date], [approval_date], [description], [is_active]) VALUES (3, 3, 1, 8, 1, CAST(N'2026-02-01' AS Date), NULL, N'Производство инсектицида "Барьер"', 0)
+GO
+SET IDENTITY_INSERT [dbo].[tech_maps] OFF
+GO
+SET IDENTITY_INSERT [dbo].[users] ON 
+GO
+INSERT [dbo].[users] ([id], [login], [password_hash], [full_name], [role_id], [department_id], [phone], [is_active], [created_at]) VALUES (1, N'ivanov', N'hash123', N'Иванов Петр Сергеевич', 1, 1, N'+7-999-111-22-33', 1, CAST(N'2026-07-26T18:07:02.020' AS DateTime))
+GO
+INSERT [dbo].[users] ([id], [login], [password_hash], [full_name], [role_id], [department_id], [phone], [is_active], [created_at]) VALUES (2, N'petrov', N'hash123', N'Петров Александр Иванович', 2, 2, N'+7-999-222-33-44', 1, CAST(N'2026-07-26T18:07:02.020' AS DateTime))
+GO
+INSERT [dbo].[users] ([id], [login], [password_hash], [full_name], [role_id], [department_id], [phone], [is_active], [created_at]) VALUES (3, N'sidorova', N'hash123', N'Сидорова Мария Владимировна', 3, 3, N'+7-999-333-44-55', 1, CAST(N'2026-07-26T18:07:02.020' AS DateTime))
+GO
+INSERT [dbo].[users] ([id], [login], [password_hash], [full_name], [role_id], [department_id], [phone], [is_active], [created_at]) VALUES (4, N'admin1', N'hash123', N'Администратор Системы', 4, 4, N'+7-999-444-55-66', 1, CAST(N'2026-07-26T18:07:02.020' AS DateTime))
+GO
+INSERT [dbo].[users] ([id], [login], [password_hash], [full_name], [role_id], [department_id], [phone], [is_active], [created_at]) VALUES (5, N'smirnov', N'hash123', N'Смирнов Дмитрий Николаевич', 5, 2, N'+7-999-555-66-77', 1, CAST(N'2026-07-26T18:07:02.020' AS DateTime))
+GO
+SET IDENTITY_INSERT [dbo].[users] OFF
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [idx_audit_log_entity]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_audit_log_entity] ON [dbo].[audit_log]
+(
+	[entity_type] ASC,
+	[entity_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_audit_log_user_id]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_audit_log_user_id] ON [dbo].[audit_log]
+(
+	[user_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_batch_step_executions]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[batch_step_executions] ADD  CONSTRAINT [UQ_batch_step_executions] UNIQUE NONCLUSTERED 
+(
+	[batch_id] ASC,
+	[tech_step_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_batch_step_executions_batch_id]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_batch_step_executions_batch_id] ON [dbo].[batch_step_executions]
+(
+	[batch_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_batch_step_executions_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_batch_step_executions_status] ON [dbo].[batch_step_executions]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_batch_used_materials]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[batch_used_materials] ADD  CONSTRAINT [UQ_batch_used_materials] UNIQUE NONCLUSTERED 
+(
+	[batch_id] ASC,
+	[raw_material_batch_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__departme__72E12F1B63E6F294]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[departments] ADD UNIQUE NONCLUSTERED 
+(
+	[name] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_deviations_batch_id]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_deviations_batch_id] ON [dbo].[deviations]
+(
+	[batch_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [idx_deviations_severity]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_deviations_severity] ON [dbo].[deviations]
+(
+	[severity] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_deviations_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_deviations_status] ON [dbo].[deviations]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_extruder_events_batch_id]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_extruder_events_batch_id] ON [dbo].[extruder_events]
+(
+	[batch_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__lab_test__D7F6F6933C9A4886]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[lab_tests] ADD UNIQUE NONCLUSTERED 
+(
+	[test_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_lab_tests_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_lab_tests_status] ON [dbo].[lab_tests]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [idx_lab_tests_target]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_lab_tests_target] ON [dbo].[lab_tests]
+(
+	[target_type] ASC,
+	[target_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__producti__56E3783750B22D41]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[production_batches] ADD UNIQUE NONCLUSTERED 
+(
+	[batch_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_production_batches_order_id]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_production_batches_order_id] ON [dbo].[production_batches]
+(
+	[order_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_production_batches_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_production_batches_status] ON [dbo].[production_batches]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__producti__730E34DF2C87A643]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[production_orders] ADD UNIQUE NONCLUSTERED 
+(
+	[order_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_production_orders_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_production_orders_status] ON [dbo].[production_orders]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__products__357D4CF9D86D6434]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[products] ADD UNIQUE NONCLUSTERED 
+(
+	[code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_products_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_products_status] ON [dbo].[products]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__raw_mate__56E378377CC8872D]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[raw_material_batches] ADD UNIQUE NONCLUSTERED 
+(
+	[batch_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__raw_mate__357D4CF9962D75B1]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[raw_materials] ADD UNIQUE NONCLUSTERED 
+(
+	[code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_recipe_components_recipe_material]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[recipe_components] ADD  CONSTRAINT [UQ_recipe_components_recipe_material] UNIQUE NONCLUSTERED 
+(
+	[recipe_id] ASC,
+	[raw_material_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_recipes_product_version]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[recipes] ADD  CONSTRAINT [UQ_recipes_product_version] UNIQUE NONCLUSTERED 
+(
+	[product_id] ASC,
+	[version] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_recipes_product_id]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_recipes_product_id] ON [dbo].[recipes]
+(
+	[product_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_recipes_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_recipes_status] ON [dbo].[recipes]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__roles__72E12F1B2F03A1AD]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[roles] ADD UNIQUE NONCLUSTERED 
+(
+	[name] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [idx_status_history_entity]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_status_history_entity] ON [dbo].[status_history]
+(
+	[entity_type] ASC,
+	[entity_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__statuses__357D4CF9E1D00012]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[statuses] ADD UNIQUE NONCLUSTERED 
+(
+	[code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_tech_map_steps_map_number]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[tech_map_steps] ADD  CONSTRAINT [UQ_tech_map_steps_map_number] UNIQUE NONCLUSTERED 
+(
+	[tech_map_id] ASC,
+	[step_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_tech_maps_product_version]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[tech_maps] ADD  CONSTRAINT [UQ_tech_maps_product_version] UNIQUE NONCLUSTERED 
+(
+	[product_id] ASC,
+	[version] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_tech_maps_product_id]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_tech_maps_product_id] ON [dbo].[tech_maps]
+(
+	[product_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [idx_tech_maps_status]    Script Date: 01.09.2026 19:44:11 ******/
+CREATE NONCLUSTERED INDEX [idx_tech_maps_status] ON [dbo].[tech_maps]
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__users__7838F27269904680]    Script Date: 01.09.2026 19:44:11 ******/
+ALTER TABLE [dbo].[users] ADD UNIQUE NONCLUSTERED 
+(
+	[login] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[audit_log] ADD  DEFAULT (getdate()) FOR [action_time]
+GO
+ALTER TABLE [dbo].[deviations] ADD  DEFAULT ('warning') FOR [severity]
+GO
+ALTER TABLE [dbo].[deviations] ADD  DEFAULT (getdate()) FOR [reported_at]
+GO
+ALTER TABLE [dbo].[extruder_events] ADD  DEFAULT ('normal') FOR [status]
+GO
+ALTER TABLE [dbo].[extruder_events] ADD  DEFAULT (getdate()) FOR [event_time]
+GO
+ALTER TABLE [dbo].[lab_tests] ADD  DEFAULT (getdate()) FOR [assigned_at]
+GO
+ALTER TABLE [dbo].[lab_tests] ADD  DEFAULT ('normal') FOR [priority]
+GO
+ALTER TABLE [dbo].[production_batches] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[production_batches] ADD  DEFAULT (getdate()) FOR [updated_at]
+GO
+ALTER TABLE [dbo].[production_orders] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[products] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[products] ADD  DEFAULT (getdate()) FOR [updated_at]
+GO
+ALTER TABLE [dbo].[raw_material_batches] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[raw_material_batches] ADD  DEFAULT (getdate()) FOR [updated_at]
+GO
+ALTER TABLE [dbo].[recipe_components] ADD  DEFAULT ((0)) FOR [tolerance_min]
+GO
+ALTER TABLE [dbo].[recipe_components] ADD  DEFAULT ((0)) FOR [tolerance_max]
+GO
+ALTER TABLE [dbo].[recipes] ADD  DEFAULT ((1)) FOR [version]
+GO
+ALTER TABLE [dbo].[recipes] ADD  DEFAULT (CONVERT([date],getdate())) FOR [creation_date]
+GO
+ALTER TABLE [dbo].[recipes] ADD  DEFAULT ((0)) FOR [total_percent]
+GO
+ALTER TABLE [dbo].[recipes] ADD  DEFAULT ((0)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[status_history] ADD  DEFAULT (getdate()) FOR [changed_at]
+GO
+ALTER TABLE [dbo].[statuses] ADD  DEFAULT ((0)) FOR [sort_order]
+GO
+ALTER TABLE [dbo].[statuses] ADD  DEFAULT ((0)) FOR [is_default]
+GO
+ALTER TABLE [dbo].[statuses] ADD  DEFAULT ((0)) FOR [is_final]
+GO
+ALTER TABLE [dbo].[statuses] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[statuses] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[tech_map_steps] ADD  DEFAULT ((1)) FOR [is_mandatory]
+GO
+ALTER TABLE [dbo].[tech_maps] ADD  DEFAULT ((1)) FOR [version]
+GO
+ALTER TABLE [dbo].[tech_maps] ADD  DEFAULT (CONVERT([date],getdate())) FOR [creation_date]
+GO
+ALTER TABLE [dbo].[tech_maps] ADD  DEFAULT ((0)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[users] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[users] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[audit_log]  WITH CHECK ADD  CONSTRAINT [FK_audit_log_users] FOREIGN KEY([user_id])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[audit_log] CHECK CONSTRAINT [FK_audit_log_users]
+GO
+ALTER TABLE [dbo].[batch_step_executions]  WITH CHECK ADD  CONSTRAINT [FK_batch_step_executions_batch] FOREIGN KEY([batch_id])
+REFERENCES [dbo].[production_batches] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[batch_step_executions] CHECK CONSTRAINT [FK_batch_step_executions_batch]
+GO
+ALTER TABLE [dbo].[batch_step_executions]  WITH CHECK ADD  CONSTRAINT [FK_batch_step_executions_finished_by] FOREIGN KEY([finished_by])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[batch_step_executions] CHECK CONSTRAINT [FK_batch_step_executions_finished_by]
+GO
+ALTER TABLE [dbo].[batch_step_executions]  WITH CHECK ADD  CONSTRAINT [FK_batch_step_executions_started_by] FOREIGN KEY([started_by])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[batch_step_executions] CHECK CONSTRAINT [FK_batch_step_executions_started_by]
+GO
+ALTER TABLE [dbo].[batch_step_executions]  WITH CHECK ADD  CONSTRAINT [FK_batch_step_executions_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[batch_step_executions] CHECK CONSTRAINT [FK_batch_step_executions_status]
+GO
+ALTER TABLE [dbo].[batch_step_executions]  WITH CHECK ADD  CONSTRAINT [FK_batch_step_executions_tech_step] FOREIGN KEY([tech_step_id])
+REFERENCES [dbo].[tech_map_steps] ([id])
+GO
+ALTER TABLE [dbo].[batch_step_executions] CHECK CONSTRAINT [FK_batch_step_executions_tech_step]
+GO
+ALTER TABLE [dbo].[batch_used_materials]  WITH CHECK ADD  CONSTRAINT [FK_batch_used_materials_batch] FOREIGN KEY([batch_id])
+REFERENCES [dbo].[production_batches] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[batch_used_materials] CHECK CONSTRAINT [FK_batch_used_materials_batch]
+GO
+ALTER TABLE [dbo].[batch_used_materials]  WITH CHECK ADD  CONSTRAINT [FK_batch_used_materials_raw_batch] FOREIGN KEY([raw_material_batch_id])
+REFERENCES [dbo].[raw_material_batches] ([id])
+GO
+ALTER TABLE [dbo].[batch_used_materials] CHECK CONSTRAINT [FK_batch_used_materials_raw_batch]
+GO
+ALTER TABLE [dbo].[deviations]  WITH CHECK ADD  CONSTRAINT [FK_deviations_batch] FOREIGN KEY([batch_id])
+REFERENCES [dbo].[production_batches] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[deviations] CHECK CONSTRAINT [FK_deviations_batch]
+GO
+ALTER TABLE [dbo].[deviations]  WITH CHECK ADD  CONSTRAINT [FK_deviations_reported_by] FOREIGN KEY([reported_by])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[deviations] CHECK CONSTRAINT [FK_deviations_reported_by]
+GO
+ALTER TABLE [dbo].[deviations]  WITH CHECK ADD  CONSTRAINT [FK_deviations_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[deviations] CHECK CONSTRAINT [FK_deviations_status]
+GO
+ALTER TABLE [dbo].[deviations]  WITH CHECK ADD  CONSTRAINT [FK_deviations_step_execution] FOREIGN KEY([step_execution_id])
+REFERENCES [dbo].[batch_step_executions] ([id])
+GO
+ALTER TABLE [dbo].[deviations] CHECK CONSTRAINT [FK_deviations_step_execution]
+GO
+ALTER TABLE [dbo].[extruder_events]  WITH CHECK ADD  CONSTRAINT [FK_extruder_events_batch] FOREIGN KEY([batch_id])
+REFERENCES [dbo].[production_batches] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[extruder_events] CHECK CONSTRAINT [FK_extruder_events_batch]
+GO
+ALTER TABLE [dbo].[lab_test_parameters]  WITH CHECK ADD  CONSTRAINT [FK_lab_test_parameters_lab_test] FOREIGN KEY([lab_test_id])
+REFERENCES [dbo].[lab_tests] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[lab_test_parameters] CHECK CONSTRAINT [FK_lab_test_parameters_lab_test]
+GO
+ALTER TABLE [dbo].[lab_tests]  WITH CHECK ADD  CONSTRAINT [FK_lab_tests_assigned_to] FOREIGN KEY([assigned_to])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[lab_tests] CHECK CONSTRAINT [FK_lab_tests_assigned_to]
+GO
+ALTER TABLE [dbo].[lab_tests]  WITH CHECK ADD  CONSTRAINT [FK_lab_tests_decided_by] FOREIGN KEY([decided_by])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[lab_tests] CHECK CONSTRAINT [FK_lab_tests_decided_by]
+GO
+ALTER TABLE [dbo].[lab_tests]  WITH CHECK ADD  CONSTRAINT [FK_lab_tests_performed_by] FOREIGN KEY([performed_by])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[lab_tests] CHECK CONSTRAINT [FK_lab_tests_performed_by]
+GO
+ALTER TABLE [dbo].[lab_tests]  WITH CHECK ADD  CONSTRAINT [FK_lab_tests_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[lab_tests] CHECK CONSTRAINT [FK_lab_tests_status]
+GO
+ALTER TABLE [dbo].[production_batches]  WITH CHECK ADD  CONSTRAINT [FK_production_batches_orders] FOREIGN KEY([order_id])
+REFERENCES [dbo].[production_orders] ([id])
+GO
+ALTER TABLE [dbo].[production_batches] CHECK CONSTRAINT [FK_production_batches_orders]
+GO
+ALTER TABLE [dbo].[production_batches]  WITH CHECK ADD  CONSTRAINT [FK_production_batches_products] FOREIGN KEY([product_id])
+REFERENCES [dbo].[products] ([id])
+GO
+ALTER TABLE [dbo].[production_batches] CHECK CONSTRAINT [FK_production_batches_products]
+GO
+ALTER TABLE [dbo].[production_batches]  WITH CHECK ADD  CONSTRAINT [FK_production_batches_recipes] FOREIGN KEY([recipe_version_id])
+REFERENCES [dbo].[recipes] ([id])
+GO
+ALTER TABLE [dbo].[production_batches] CHECK CONSTRAINT [FK_production_batches_recipes]
+GO
+ALTER TABLE [dbo].[production_batches]  WITH CHECK ADD  CONSTRAINT [FK_production_batches_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[production_batches] CHECK CONSTRAINT [FK_production_batches_status]
+GO
+ALTER TABLE [dbo].[production_batches]  WITH CHECK ADD  CONSTRAINT [FK_production_batches_tech_map_steps] FOREIGN KEY([current_step_id])
+REFERENCES [dbo].[tech_map_steps] ([id])
+GO
+ALTER TABLE [dbo].[production_batches] CHECK CONSTRAINT [FK_production_batches_tech_map_steps]
+GO
+ALTER TABLE [dbo].[production_batches]  WITH CHECK ADD  CONSTRAINT [FK_production_batches_tech_maps] FOREIGN KEY([tech_map_version_id])
+REFERENCES [dbo].[tech_maps] ([id])
+GO
+ALTER TABLE [dbo].[production_batches] CHECK CONSTRAINT [FK_production_batches_tech_maps]
+GO
+ALTER TABLE [dbo].[production_orders]  WITH CHECK ADD  CONSTRAINT [FK_production_orders_products] FOREIGN KEY([product_id])
+REFERENCES [dbo].[products] ([id])
+GO
+ALTER TABLE [dbo].[production_orders] CHECK CONSTRAINT [FK_production_orders_products]
+GO
+ALTER TABLE [dbo].[production_orders]  WITH CHECK ADD  CONSTRAINT [FK_production_orders_recipes] FOREIGN KEY([recipe_id])
+REFERENCES [dbo].[recipes] ([id])
+GO
+ALTER TABLE [dbo].[production_orders] CHECK CONSTRAINT [FK_production_orders_recipes]
+GO
+ALTER TABLE [dbo].[production_orders]  WITH CHECK ADD  CONSTRAINT [FK_production_orders_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[production_orders] CHECK CONSTRAINT [FK_production_orders_status]
+GO
+ALTER TABLE [dbo].[production_orders]  WITH CHECK ADD  CONSTRAINT [FK_production_orders_tech_maps] FOREIGN KEY([tech_map_id])
+REFERENCES [dbo].[tech_maps] ([id])
+GO
+ALTER TABLE [dbo].[production_orders] CHECK CONSTRAINT [FK_production_orders_tech_maps]
+GO
+ALTER TABLE [dbo].[production_orders]  WITH CHECK ADD  CONSTRAINT [FK_production_orders_users] FOREIGN KEY([created_by])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[production_orders] CHECK CONSTRAINT [FK_production_orders_users]
+GO
+ALTER TABLE [dbo].[products]  WITH CHECK ADD  CONSTRAINT [FK_products_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[products] CHECK CONSTRAINT [FK_products_status]
+GO
+ALTER TABLE [dbo].[raw_material_batches]  WITH CHECK ADD  CONSTRAINT [FK_raw_material_batches_raw_materials] FOREIGN KEY([raw_material_id])
+REFERENCES [dbo].[raw_materials] ([id])
+GO
+ALTER TABLE [dbo].[raw_material_batches] CHECK CONSTRAINT [FK_raw_material_batches_raw_materials]
+GO
+ALTER TABLE [dbo].[raw_material_batches]  WITH CHECK ADD  CONSTRAINT [FK_raw_material_batches_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[raw_material_batches] CHECK CONSTRAINT [FK_raw_material_batches_status]
+GO
+ALTER TABLE [dbo].[recipe_components]  WITH CHECK ADD  CONSTRAINT [FK_recipe_components_raw_materials] FOREIGN KEY([raw_material_id])
+REFERENCES [dbo].[raw_materials] ([id])
+GO
+ALTER TABLE [dbo].[recipe_components] CHECK CONSTRAINT [FK_recipe_components_raw_materials]
+GO
+ALTER TABLE [dbo].[recipe_components]  WITH CHECK ADD  CONSTRAINT [FK_recipe_components_recipes] FOREIGN KEY([recipe_id])
+REFERENCES [dbo].[recipes] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[recipe_components] CHECK CONSTRAINT [FK_recipe_components_recipes]
+GO
+ALTER TABLE [dbo].[recipes]  WITH CHECK ADD  CONSTRAINT [FK_recipes_products] FOREIGN KEY([product_id])
+REFERENCES [dbo].[products] ([id])
+GO
+ALTER TABLE [dbo].[recipes] CHECK CONSTRAINT [FK_recipes_products]
+GO
+ALTER TABLE [dbo].[recipes]  WITH CHECK ADD  CONSTRAINT [FK_recipes_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[recipes] CHECK CONSTRAINT [FK_recipes_status]
+GO
+ALTER TABLE [dbo].[recipes]  WITH CHECK ADD  CONSTRAINT [FK_recipes_users] FOREIGN KEY([author_id])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[recipes] CHECK CONSTRAINT [FK_recipes_users]
+GO
+ALTER TABLE [dbo].[status_history]  WITH CHECK ADD  CONSTRAINT [FK_status_history_changed_by] FOREIGN KEY([changed_by])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[status_history] CHECK CONSTRAINT [FK_status_history_changed_by]
+GO
+ALTER TABLE [dbo].[status_history]  WITH CHECK ADD  CONSTRAINT [FK_status_history_new_status] FOREIGN KEY([new_status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[status_history] CHECK CONSTRAINT [FK_status_history_new_status]
+GO
+ALTER TABLE [dbo].[status_history]  WITH CHECK ADD  CONSTRAINT [FK_status_history_old_status] FOREIGN KEY([old_status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[status_history] CHECK CONSTRAINT [FK_status_history_old_status]
+GO
+ALTER TABLE [dbo].[tech_map_steps]  WITH CHECK ADD  CONSTRAINT [FK_tech_map_steps_tech_maps] FOREIGN KEY([tech_map_id])
+REFERENCES [dbo].[tech_maps] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[tech_map_steps] CHECK CONSTRAINT [FK_tech_map_steps_tech_maps]
+GO
+ALTER TABLE [dbo].[tech_maps]  WITH CHECK ADD  CONSTRAINT [FK_tech_maps_products] FOREIGN KEY([product_id])
+REFERENCES [dbo].[products] ([id])
+GO
+ALTER TABLE [dbo].[tech_maps] CHECK CONSTRAINT [FK_tech_maps_products]
+GO
+ALTER TABLE [dbo].[tech_maps]  WITH CHECK ADD  CONSTRAINT [FK_tech_maps_status] FOREIGN KEY([status_id])
+REFERENCES [dbo].[statuses] ([id])
+GO
+ALTER TABLE [dbo].[tech_maps] CHECK CONSTRAINT [FK_tech_maps_status]
+GO
+ALTER TABLE [dbo].[tech_maps]  WITH CHECK ADD  CONSTRAINT [FK_tech_maps_users] FOREIGN KEY([author_id])
+REFERENCES [dbo].[users] ([id])
+GO
+ALTER TABLE [dbo].[tech_maps] CHECK CONSTRAINT [FK_tech_maps_users]
+GO
+ALTER TABLE [dbo].[users]  WITH CHECK ADD  CONSTRAINT [FK_users_departments] FOREIGN KEY([department_id])
+REFERENCES [dbo].[departments] ([id])
+GO
+ALTER TABLE [dbo].[users] CHECK CONSTRAINT [FK_users_departments]
+GO
+ALTER TABLE [dbo].[users]  WITH CHECK ADD  CONSTRAINT [FK_users_roles] FOREIGN KEY([role_id])
+REFERENCES [dbo].[roles] ([id])
+GO
+ALTER TABLE [dbo].[users] CHECK CONSTRAINT [FK_users_roles]
+GO
+ALTER TABLE [dbo].[deviations]  WITH CHECK ADD  CONSTRAINT [CHK_deviations_severity] CHECK  (([severity]='critical' OR [severity]='warning' OR [severity]='info'))
+GO
+ALTER TABLE [dbo].[deviations] CHECK CONSTRAINT [CHK_deviations_severity]
+GO
+ALTER TABLE [dbo].[extruder_events]  WITH CHECK ADD  CONSTRAINT [CHK_extruder_events_status] CHECK  (([status]='critical' OR [status]='warning' OR [status]='normal'))
+GO
+ALTER TABLE [dbo].[extruder_events] CHECK CONSTRAINT [CHK_extruder_events_status]
+GO
+ALTER TABLE [dbo].[lab_test_parameters]  WITH CHECK ADD  CONSTRAINT [CHK_lab_test_parameters_result] CHECK  (([result_status]='out_of_spec' OR [result_status]='in_spec' OR [result_status]='pending'))
+GO
+ALTER TABLE [dbo].[lab_test_parameters] CHECK CONSTRAINT [CHK_lab_test_parameters_result]
+GO
+ALTER TABLE [dbo].[lab_tests]  WITH CHECK ADD  CONSTRAINT [CHK_lab_tests_decision] CHECK  (([decision]='blocked' OR [decision]='approved'))
+GO
+ALTER TABLE [dbo].[lab_tests] CHECK CONSTRAINT [CHK_lab_tests_decision]
+GO
+ALTER TABLE [dbo].[lab_tests]  WITH CHECK ADD  CONSTRAINT [CHK_lab_tests_priority] CHECK  (([priority]='urgent' OR [priority]='high' OR [priority]='normal' OR [priority]='low'))
+GO
+ALTER TABLE [dbo].[lab_tests] CHECK CONSTRAINT [CHK_lab_tests_priority]
+GO
+ALTER TABLE [dbo].[lab_tests]  WITH CHECK ADD  CONSTRAINT [CHK_lab_tests_target_type] CHECK  (([target_type]='product' OR [target_type]='raw_material'))
+GO
+ALTER TABLE [dbo].[lab_tests] CHECK CONSTRAINT [CHK_lab_tests_target_type]
+GO
+ALTER TABLE [dbo].[production_batches]  WITH CHECK ADD  CONSTRAINT [CHK_production_batches_lab_decision] CHECK  (([lab_decision]='blocked' OR [lab_decision]='approved'))
+GO
+ALTER TABLE [dbo].[production_batches] CHECK CONSTRAINT [CHK_production_batches_lab_decision]
+GO
+ALTER TABLE [dbo].[recipe_components]  WITH CHECK ADD  CONSTRAINT [CHK_percentage] CHECK  (([percentage]>(0)))
+GO
+ALTER TABLE [dbo].[recipe_components] CHECK CONSTRAINT [CHK_percentage]
+GO
+ALTER TABLE [dbo].[statuses]  WITH CHECK ADD  CONSTRAINT [CHK_statuses_entity_type] CHECK  (([entity_type]='deviation' OR [entity_type]='step' OR [entity_type]='lab_test' OR [entity_type]='production_batch' OR [entity_type]='raw_material_batch' OR [entity_type]='production_order' OR [entity_type]='tech_map' OR [entity_type]='recipe' OR [entity_type]='product'))
+GO
+ALTER TABLE [dbo].[statuses] CHECK CONSTRAINT [CHK_statuses_entity_type]
+GO
+USE [master]
+GO
+ALTER DATABASE [PlantProtectionDB] SET  READ_WRITE 
+GO
