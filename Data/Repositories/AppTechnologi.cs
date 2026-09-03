@@ -10,6 +10,12 @@ namespace PlantProtectionServer.Data.Repositories
     {
         PlantProtectionDbContext context = new PlantProtectionDbContext();
 
+        Dictionary<int, string> comment = new Dictionary<int, string>() 
+        {
+            {3, "Заархивирование продукта"},
+            {2, "Восстановление продукта" },
+            {9, "Подтверждение продукта" }
+        };
         public async Task<bool> Authorization(string log, string pass)
         {
             return await context.Users.AnyAsync(x => x.Login == log && x.PasswordHash == pass);
@@ -71,5 +77,66 @@ namespace PlantProtectionServer.Data.Repositories
             }
         }
 
+        public async Task<bool> EditProduct(ConfirmationProduct editProduct)
+        {
+            try
+            {
+                var product = await context.Products.FirstOrDefaultAsync(x => x.Code == editProduct.oldCode);
+                product.Code = editProduct.code;
+                product.Name = editProduct.name;
+                product.Type = editProduct.type;
+                product.ReleaseForm = editProduct.releaseForm;
+                product.Comment = editProduct.comment;
+                product.UpdatedAt = DateTime.Now;
+
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
+        
+        public async Task<bool> EditStatusProduct(ConfirmationProduct editProduct)
+        {
+            try
+            {
+                var product = await context.Products.FirstOrDefaultAsync(x => x.Code == editProduct.code);
+                product.StatusId = editProduct.status;
+                product.UpdatedAt = DateTime.Now;
+
+                Console.WriteLine($"{product.ActiveRecipeId} {product.ActiveTechMapId} {editProduct.status}");
+                if((product.ActiveRecipeId == null || product.ActiveTechMapId == null) && editProduct.status == 2)
+                {
+                    editProduct.status = 9;
+                    product.StatusId = editProduct.status;
+                }
+
+                await context.StatusHistories.AddAsync(new StatusHistory()
+                {
+                    EntityType = "product",
+                    EntityId = Convert.ToInt32(editProduct.id), //id кого продукта изменился
+                    NewStatusId = editProduct.status,
+                    OldStatusId = editProduct.oldStatus,
+                    ChangedAt = DateTime.Now,
+                    Comment = comment[editProduct.status],
+                    ChangedBy = 1, //кто измени id пользователя
+                    
+
+                });
+
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
+
+        
     }
 }

@@ -39,14 +39,15 @@ namespace PlantProtectionServer
             {
                 AppTechnologi appTechnologi = new AppTechnologi();
                 bool authorization = await appTechnologi.Authorization(log, pass);
-                if (authorization)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return authorization;
+                //if (authorization)
+                //{
+                //    return true;
+                //}
+                //else
+                //{
+                //    return false;
+                //}
 
             });
 
@@ -72,6 +73,37 @@ namespace PlantProtectionServer
                 bool result = await appTechnologi.AddNewProduct(request);
 
                 if(result)
+                {
+                    context.Response.StatusCode = 200;
+                }
+                else
+                {
+                    context.Response.StatusCode = 400;
+                }
+            });
+
+            app.MapPut("/api/appTechnologi/editProduct", async (context) =>
+            {
+                AppTechnologi appTechnologi = new AppTechnologi();
+                var product = await context.Request.ReadFromJsonAsync<ConfirmationProduct>();
+                bool edit = await appTechnologi.EditProduct(product);
+                if (edit)
+                {
+                    context.Response.StatusCode = 200;
+                }
+                else
+                {
+                    context.Response.StatusCode = 400;
+                }
+            });
+
+            app.MapPut("/api/appTechnologi/changetStatusProduct", async (context) =>
+            {
+                AppTechnologi appTechnologi = new AppTechnologi();
+                var product = await context.Request.ReadFromJsonAsync<ConfirmationProduct>();
+                bool edit = await appTechnologi.EditStatusProduct(product);
+
+                if (edit)
                 {
                     context.Response.StatusCode = 200;
                 }
