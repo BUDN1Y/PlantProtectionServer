@@ -16,9 +16,23 @@ namespace PlantProtectionServer.Data.Repositories
             {2, "Восстановление продукта" },
             {9, "Подтверждение продукта" }
         };
-        public async Task<bool> Authorization(string log, string pass)
+        public async Task<DataUser?> Authorization(string log, string pass)
         {
-            return await context.Users.AnyAsync(x => x.Login == log && x.PasswordHash == pass);
+            return await context.Users
+            .Include(p => p.Department)
+            .Include(p => p.Role)
+            .Where(x => x.Login == log && x.PasswordHash == pass)
+            .Select(p => new DataUser
+            {
+                id = p.Id,
+                fullName = p.FullName,
+                roleName = p.Role.Name,
+                roleId = p.RoleId,
+                departmentName = p.Department.Name,
+                departmentDescription = p.Department.Description,
+                roleDescription = p.Role.Description,
+                isActive = p.IsActive
+            }).FirstOrDefaultAsync();
         }
 
         public async Task<ProductDto[]> GetDataProduction()
@@ -117,14 +131,13 @@ namespace PlantProtectionServer.Data.Repositories
                 await context.StatusHistories.AddAsync(new StatusHistory()
                 {
                     EntityType = "product",
-                    EntityId = Convert.ToInt32(editProduct.id), //id кого продукта изменился
+                    EntityId = Convert.ToInt32(editProduct.id), //id какого продукта изменился
                     NewStatusId = editProduct.status,
                     OldStatusId = editProduct.oldStatus,
                     ChangedAt = DateTime.Now,
                     Comment = comment[editProduct.status],
-                    ChangedBy = 1, //кто измени id пользователя
+                    ChangedBy = Convert.ToInt32(editProduct.changetBy), //кто измени id пользователя
                     
-
                 });
 
                 await context.SaveChangesAsync();

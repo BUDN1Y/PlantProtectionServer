@@ -38,17 +38,8 @@ namespace PlantProtectionServer
             app.MapGet("/api/appTechnologi/authorization", async (string log, string pass) =>
             {
                 AppTechnologi appTechnologi = new AppTechnologi();
-                bool authorization = await appTechnologi.Authorization(log, pass);
-                return authorization;
-                //if (authorization)
-                //{
-                //    return true;
-                //}
-                //else
-                //{
-                //    return false;
-                //}
-
+                DataUser? authorization = await appTechnologi.Authorization(log, pass);
+                return authorization;               
             });
 
             app.MapGet("/api/appTechnologi/getDataProduction", async () =>
