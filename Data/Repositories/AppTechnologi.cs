@@ -10,7 +10,7 @@ namespace PlantProtectionServer.Data.Repositories
     {
         PlantProtectionDbContext context = new PlantProtectionDbContext();
 
-        Dictionary<int, string> comment = new Dictionary<int, string>() 
+        Dictionary<int, string> comment = new Dictionary<int, string>()
         {
             {3, "Заархивирование продукта"},
             {2, "Восстановление продукта" },
@@ -84,7 +84,7 @@ namespace PlantProtectionServer.Data.Repositories
                 await context.SaveChangesAsync();
                 return true;
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 return false;
@@ -112,7 +112,7 @@ namespace PlantProtectionServer.Data.Repositories
                 return false;
             }
         }
-        
+
         public async Task<bool> EditStatusProduct(ConfirmationProduct editProduct)
         {
             try
@@ -122,7 +122,7 @@ namespace PlantProtectionServer.Data.Repositories
                 product.UpdatedAt = DateTime.Now;
 
                 Console.WriteLine($"{product.ActiveRecipeId} {product.ActiveTechMapId} {editProduct.status}");
-                if((product.ActiveRecipeId == null || product.ActiveTechMapId == null) && editProduct.status == 2)
+                if ((product.ActiveRecipeId == null || product.ActiveTechMapId == null) && editProduct.status == 2)
                 {
                     editProduct.status = 9;
                     product.StatusId = editProduct.status;
@@ -137,7 +137,7 @@ namespace PlantProtectionServer.Data.Repositories
                     ChangedAt = DateTime.Now,
                     Comment = comment[editProduct.status],
                     ChangedBy = Convert.ToInt32(editProduct.changetBy), //кто измени id пользователя
-                    
+
                 });
 
                 await context.SaveChangesAsync();
@@ -150,6 +150,58 @@ namespace PlantProtectionServer.Data.Repositories
             }
         }
 
-        
+
+        public async Task<RecipesData[]?> AllRecipesData()
+        {
+            try
+            {
+                return await context.Recipes
+                .Include(p => p.Status)
+                .Include(p => p.Author)
+                    .Select(x => new RecipesData
+                {
+                    id = x.Id,
+                    productId = x.ProductId,
+                    creationDate = x.CreationDate,
+                    version = x.Version,
+                    comments = x.Comments,
+                    statusId = x.StatusId,
+                    authorId = x.AuthorId,
+                    authorName = x.Author.FullName,
+                    statusName = x.Status.Name,
+                    statusColor = x.Status.Color ?? "#999999"
+                    }).ToArrayAsync();
+               
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+
+        public async Task<RecipeComponents[]?> RecipeComponets(int recipeId)
+        {
+            try
+            {
+                return await context.RecipeComponents.Where(x => x.RecipeId == recipeId).Select(x => new RecipeComponents
+                {
+                    id = x.Id,
+                    recipeId = x.RecipeId,
+                    rawMaterialId = x.RawMaterialId,
+                    percentage = x.Percentage,
+                    toleranceMin = x.ToleranceMin,
+                    toleranceMax = x.ToleranceMax,
+                    loadOrder = x.LoadOrder
+                    
+                }).ToArrayAsync();
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
     }
 }

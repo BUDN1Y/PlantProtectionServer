@@ -103,7 +103,19 @@ namespace PlantProtectionServer
                     context.Response.StatusCode = 400;
                 }
             });
-           
+
+            app.MapGet("/api/appTechnologi/getDataRecipes", async () => 
+            {
+                AppTechnologi appTechnologi = new AppTechnologi();
+                return await appTechnologi.AllRecipesData();
+            });
+
+            app.MapGet("/api/appTechnologi/getDataRecipeComponets", async (int id) =>
+            {
+                AppTechnologi appTechnologi = new AppTechnologi();
+                return await appTechnologi.RecipeComponets(id);
+            });
+
 
             app.Run();
 
