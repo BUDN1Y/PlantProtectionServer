@@ -5,6 +5,7 @@ namespace PlantProtectionServer.Models
 {
     public class ConfirmationProduct
     {
+        public int? autor { get; set; }
         public int? changetBy { get; set; }
         public int? recipe { get; set; }
         public int? techcard { get; set; }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using PlantProtectionServer.Data.Repositories;
 using PlantProtectionServer.Models;
 using PlantProtectionServer.ModelsDB;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks.Dataflow;
 
 
@@ -39,7 +40,7 @@ namespace PlantProtectionServer
             {
                 AppTechnologi appTechnologi = new AppTechnologi();
                 DataUser? authorization = await appTechnologi.Authorization(log, pass);
-                return authorization;               
+                return authorization;
             });
 
             app.MapGet("/api/appTechnologi/getDataProduction", async () =>
@@ -63,7 +64,7 @@ namespace PlantProtectionServer
                 var request = await context.Request.ReadFromJsonAsync<ConfirmationProduct>();
                 bool result = await appTechnologi.AddNewProduct(request);
 
-                if(result)
+                if (result)
                 {
                     context.Response.StatusCode = 200;
                 }
@@ -104,7 +105,7 @@ namespace PlantProtectionServer
                 }
             });
 
-            app.MapGet("/api/appTechnologi/getDataRecipes", async () => 
+            app.MapGet("/api/appTechnologi/getDataRecipes", async () =>
             {
                 AppTechnologi appTechnologi = new AppTechnologi();
                 return await appTechnologi.AllRecipesData();
@@ -116,6 +117,25 @@ namespace PlantProtectionServer
                 return await appTechnologi.RecipeComponets(id);
             });
 
+            app.MapGet("/api/appTechnologi/getDataRawMaterials", async () =>
+            {
+                AppTechnologi appTechnologi = new AppTechnologi();
+                return await appTechnologi.GetDataRawMaterials();
+            });
+
+            app.MapGet("/api/appTechnologi/getDataRecipesComment", async (int id, string type) =>
+            {
+                AppTechnologi appTechnologi = new AppTechnologi();
+                var result = await appTechnologi.GetRecipesComment(id, type);
+                if(result == null)
+                {
+                    return Results.NotFound();
+                }
+                else
+                {
+                    return Results.Ok(result);
+                }
+            });
 
             app.Run();
 

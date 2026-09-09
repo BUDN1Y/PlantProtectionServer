@@ -1,4 +1,4 @@
-﻿namespace PlantProtectionServer.Models
+﻿namespace PlantProtectionServer.Models.Recipe
 {
     public class RecipesData
     {

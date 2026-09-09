@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure;
+using Microsoft.EntityFrameworkCore;
 using PlantProtectionServer.Data.Context;
 using PlantProtectionServer.Models;
+using PlantProtectionServer.Models.Recipe;
 using PlantProtectionServer.ModelsDB;
 using System.Linq;
 
@@ -12,6 +14,7 @@ namespace PlantProtectionServer.Data.Repositories
 
         Dictionary<int, string> comment = new Dictionary<int, string>()
         {
+            {1, "Создание продукта"},
             {3, "Заархивирование продукта"},
             {2, "Восстановление продукта" },
             {9, "Подтверждение продукта" }
@@ -71,7 +74,7 @@ namespace PlantProtectionServer.Data.Repositories
         {
             try
             {
-                await context.Products.AddAsync(new Product()
+                var newProduct = new Product()
                 {
                     Name = product.name,
                     Code = product.code,
@@ -80,7 +83,22 @@ namespace PlantProtectionServer.Data.Repositories
                     Comment = product.comment,
                     StatusId = product.status,
                     CreatedAt = DateTime.Now
+                };
+                await context.Products.AddAsync(newProduct);
+                await context.SaveChangesAsync();
+
+                await context.StatusHistories.AddAsync(new StatusHistory
+                {
+                    EntityType = "product",
+                    EntityId = newProduct.Id, //id какого продукта изменился
+                    NewStatusId = newProduct.StatusId,
+                    OldStatusId = null,
+                    ChangedAt = DateTime.Now,
+                    Comment = comment[newProduct.StatusId],
+                    ChangedBy = Convert.ToInt32(product.autor),
                 });
+
+
                 await context.SaveChangesAsync();
                 return true;
             }
@@ -159,19 +177,19 @@ namespace PlantProtectionServer.Data.Repositories
                 .Include(p => p.Status)
                 .Include(p => p.Author)
                     .Select(x => new RecipesData
-                {
-                    id = x.Id,
-                    productId = x.ProductId,
-                    creationDate = x.CreationDate,
-                    version = x.Version,
-                    comments = x.Comments,
-                    statusId = x.StatusId,
-                    authorId = x.AuthorId,
-                    authorName = x.Author.FullName,
-                    statusName = x.Status.Name,
-                    statusColor = x.Status.Color ?? "#999999"
+                    {
+                        id = x.Id,
+                        productId = x.ProductId,
+                        creationDate = x.CreationDate,
+                        version = x.Version,
+                        comments = x.Comments,
+                        statusId = x.StatusId,
+                        authorId = x.AuthorId,
+                        authorName = x.Author.FullName,
+                        statusName = x.Status.Name,
+                        statusColor = x.Status.Color ?? "#999999"
                     }).ToArrayAsync();
-               
+
             }
             catch (Exception ex)
             {
@@ -193,10 +211,54 @@ namespace PlantProtectionServer.Data.Repositories
                     toleranceMin = x.ToleranceMin,
                     toleranceMax = x.ToleranceMax,
                     loadOrder = x.LoadOrder
-                    
+
                 }).ToArrayAsync();
 
             }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public async Task<RawMaterialsData[]?> GetDataRawMaterials()
+        {
+            try
+            {
+                return await context.RawMaterials.Select(x => new RawMaterialsData
+                {
+                    id = x.Id,
+                    code = x.Code,
+                    name = x.Name,
+                    category = x.Category,
+                    unit = x.Unit
+                }).ToArrayAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        public async Task<RecipeStatusHistory[]?> GetRecipesComment(int id, string type)
+        {
+            try
+            {
+                Console.WriteLine($"{id},{type}");
+                return await context.StatusHistories
+                .Include(p => p.ChangedBy)
+                .Where(x => x.EntityType == type && x.EntityId == id)
+                .Select(x => new RecipeStatusHistory
+                {
+                    date = x.ChangedAt,
+                    author = x.ChangedByNavigation.FullName,
+                    statusOld = Convert.ToString(x.OldStatus),
+                    statusNew = Convert.ToString(x.NewStatus),
+                    comment = x.Comment
+                }).ToArrayAsync();
+                
+    }
             catch (Exception ex)
             {
                 return null;
