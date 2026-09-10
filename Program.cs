@@ -114,7 +114,14 @@ namespace PlantProtectionServer
             app.MapGet("/api/appTechnologi/getDataRecipeComponets", async (int id) =>
             {
                 AppTechnologi appTechnologi = new AppTechnologi();
-                return await appTechnologi.RecipeComponets(id);
+                if (id == 0)
+                {
+                    return await appTechnologi.RecipeComponets(id);
+                }
+                else
+                {
+                    return await appTechnologi.RecipeComponets(id);
+                }
             });
 
             app.MapGet("/api/appTechnologi/getDataRawMaterials", async () =>
@@ -127,7 +134,7 @@ namespace PlantProtectionServer
             {
                 AppTechnologi appTechnologi = new AppTechnologi();
                 var result = await appTechnologi.GetRecipesComment(id, type);
-                if(result == null)
+                if (result == null)
                 {
                     return Results.NotFound();
                 }

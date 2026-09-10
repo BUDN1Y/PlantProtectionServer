@@ -202,17 +202,34 @@ namespace PlantProtectionServer.Data.Repositories
         {
             try
             {
-                return await context.RecipeComponents.Where(x => x.RecipeId == recipeId).Select(x => new RecipeComponents
+                if (recipeId == 0)
                 {
-                    id = x.Id,
-                    recipeId = x.RecipeId,
-                    rawMaterialId = x.RawMaterialId,
-                    percentage = x.Percentage,
-                    toleranceMin = x.ToleranceMin,
-                    toleranceMax = x.ToleranceMax,
-                    loadOrder = x.LoadOrder
+                    return await context.RecipeComponents.Where(x => x.RecipeId == recipeId).Select(x => new RecipeComponents
+                    {
+                        id = x.Id,
+                        recipeId = x.RecipeId,
+                        rawMaterialId = x.RawMaterialId,
+                        percentage = x.Percentage,
+                        toleranceMin = x.ToleranceMin,
+                        toleranceMax = x.ToleranceMax,
+                        loadOrder = x.LoadOrder
 
-                }).ToArrayAsync();
+                    }).ToArrayAsync();
+                }
+                else
+                {
+                    return await context.RecipeComponents.Select(x => new RecipeComponents
+                    {
+                        id = x.Id,
+                        recipeId = x.RecipeId,
+                        rawMaterialId = x.RawMaterialId,
+                        percentage = x.Percentage,
+                        toleranceMin = x.ToleranceMin,
+                        toleranceMax = x.ToleranceMax,
+                        loadOrder = x.LoadOrder
+
+                    }).ToArrayAsync();
+                }
 
             }
             catch (Exception ex)
@@ -245,22 +262,28 @@ namespace PlantProtectionServer.Data.Repositories
         {
             try
             {
-                Console.WriteLine($"{id},{type}");
-                return await context.StatusHistories
-                .Include(p => p.ChangedBy)
+                var result = await context.StatusHistories
                 .Where(x => x.EntityType == type && x.EntityId == id)
+                .Include(p => p.ChangedByNavigation)
+                .Include(p => p.NewStatus)
                 .Select(x => new RecipeStatusHistory
                 {
                     date = x.ChangedAt,
                     author = x.ChangedByNavigation.FullName,
                     statusOld = Convert.ToString(x.OldStatus),
                     statusNew = Convert.ToString(x.NewStatus),
+                    statusNameNew = x.NewStatus.Name,
+                    statusColorNew = x.NewStatus.Color,
+                    statusColorOld = x.OldStatus.Color,
+                    statusNameOld = x.OldStatus.Name,
                     comment = x.Comment
                 }).ToArrayAsync();
-                
-    }
+
+                return result;
+            }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return null;
             }
         }
