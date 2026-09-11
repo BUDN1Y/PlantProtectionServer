@@ -5,6 +5,7 @@ using PlantProtectionServer.Models;
 using PlantProtectionServer.ModelsDB;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks.Dataflow;
+using PlantProtectionServer.Models.Recipe;
 
 
 namespace PlantProtectionServer
@@ -141,6 +142,22 @@ namespace PlantProtectionServer
                 else
                 {
                     return Results.Ok(result);
+                }
+            });
+
+            app.MapPost("/api/appTechnologi/createRecipe", async (context) =>
+            {
+                AppTechnologi appTechnologi = new AppTechnologi();
+                var request = await context.Request.ReadFromJsonAsync<CreateRecipe>();
+                bool result = await appTechnologi.AddNewRecipe(request);
+
+                if (result)
+                {
+                    context.Response.StatusCode = 200;
+                }
+                else
+                {
+                    context.Response.StatusCode = 400;
                 }
             });
 

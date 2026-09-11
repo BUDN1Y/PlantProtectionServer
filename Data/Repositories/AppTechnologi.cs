@@ -288,5 +288,49 @@ namespace PlantProtectionServer.Data.Repositories
             }
         }
 
-    }
+        public async Task<bool> AddNewRecipe(CreateRecipe recipe)
+        {
+            try
+            {
+                var newRecipe = new Recipe()
+                {
+                    ProductId = recipe.productId,
+                    Version = recipe.version,
+                    StatusId = recipe.statusId,
+                    AuthorId = recipe.authorId,
+                    CreationDate = recipe.creationDate,
+                    ApprovalDate = null,
+                    Comments = recipe.comments,
+                    TotalPercent = 0,
+                    IsActive = true
+                };
+                await context.Recipes.AddAsync(newRecipe);
+                await context.SaveChangesAsync();
+
+                if (recipe.componets != null)
+                {
+                    for (global::System.Int32 i = 0; i < recipe.componets.Length; i++)
+                    {
+                        await context.RecipeComponents.AddAsync(new RecipeComponent
+                        {
+                            RecipeId = newRecipe.Id,
+                            RawMaterialId = recipe.componets[i].id,
+                            Percentage = recipe.componets[i].percentage,
+                            ToleranceMin = recipe.componets[i].toleranceMin,
+                            ToleranceMax = recipe.componets[i].toleranceMax,
+                            LoadOrder = recipe.componets[i].loadOrder
+                        });
+                    }
+                }
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+
+        }
+    }   
 }
