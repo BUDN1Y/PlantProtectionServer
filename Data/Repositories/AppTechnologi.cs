@@ -1,8 +1,8 @@
 ﻿using Azure;
 using Microsoft.EntityFrameworkCore;
 using PlantProtectionServer.Data.Context;
-using PlantProtectionServer.Models;
-using PlantProtectionServer.Models.Recipe;
+using PlantProtectionServer.Models.Technologist.Product;
+using PlantProtectionServer.Models.Technologist.Recipe;
 using PlantProtectionServer.ModelsDB;
 using System.Linq;
 
@@ -17,7 +17,11 @@ namespace PlantProtectionServer.Data.Repositories
             {1, "Создание продукта"},
             {3, "Заархивирование продукта"},
             {2, "Восстановление продукта" },
-            {9, "Подтверждение продукта" }
+            {9, "Подтверждение продукта" },
+            {4, "Создание рецепта" },
+            {5, "Подтверждение рецепта" },
+            {6, "Восстановление рецепта" },
+            {7, "Восстановление рецепта" }
         };
         public async Task<DataUser?> Authorization(string log, string pass)
         {
@@ -332,5 +336,92 @@ namespace PlantProtectionServer.Data.Repositories
             }
 
         }
-    }   
+
+
+        public async Task<bool> EditRecipe(int idRecipe, CreateRecipe recipe)
+        {
+            try
+            {
+                var newRecipe = await context.Recipes.FirstOrDefaultAsync(x => x.Id == idRecipe);
+                if (newRecipe != null)
+                {
+                    newRecipe.Version += 1;
+                    newRecipe.StatusId = recipe.statusId;
+                    newRecipe.ApprovalDate = (recipe.statusId == 6) ? DateOnly.FromDateTime(DateTime.Now) : null;
+                    newRecipe.Comments = recipe.comments;
+                }
+                else
+                {
+                    return false;
+                }
+
+                await context.SaveChangesAsync();
+
+                var deleteRecipeComponets = await context.RecipeComponents.Where(x => x.RecipeId == idRecipe).ToArrayAsync();
+                context.RemoveRange(deleteRecipeComponets);
+
+                if (recipe.componets != null)
+                {
+                    List<RecipeComponent> components = new List<RecipeComponent>();
+                    for (global::System.Int32 i = 0; i < recipe.componets.Length; i++)
+                    {
+                        RecipeComponent component = new RecipeComponent()
+                        {
+                            RecipeId = idRecipe,
+                            RawMaterialId = recipe.componets[i].rawMaterialId,
+                            Percentage = recipe.componets[i].percentage,
+                            ToleranceMin = recipe.componets[i].toleranceMin,
+                            ToleranceMax = recipe.componets[i].toleranceMax,
+                            LoadOrder = recipe.componets[i].loadOrder
+                        };
+                        context.RecipeComponents.Add(component);
+                    }
+                         
+                    
+                }
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+
+        }
+
+        public async Task<bool> EditStatusRecipe(int idRecipe, int statusId, int userId)
+        {
+            try
+            {
+                Recipe? recipe = await context.Recipes.FirstOrDefaultAsync(x => x.Id == idRecipe);
+                if (recipe != null)
+                {
+                   
+
+                    await context.StatusHistories.AddAsync(new StatusHistory()
+                    {
+                        EntityType = "recipe",
+                        EntityId = Convert.ToInt32(idRecipe), //id какого продукта изменился
+                        NewStatusId = statusId,
+                        OldStatusId = recipe.StatusId,
+                        ChangedAt = DateTime.Now,
+                        Comment = comment[statusId],
+                        ChangedBy = Convert.ToInt32(userId), //кто измени id пользователя
+
+                    }); 
+                    recipe.StatusId = statusId;
+                }
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+
+        }
+    }
 }

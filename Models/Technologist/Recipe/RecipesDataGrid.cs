@@ -1,8 +1,9 @@
-﻿namespace PlantProtectionServer.Models.Recipe
+﻿namespace PlantProtectionServer.Models.Technologist.Recipe
 {
     public class RecipesDataGrid
     {
         public int id { get; set; }
+        public int rawMaterialId { get; set; }
         public string code { get; set; } = null!;
         public string name { get; set; } = null!;
         public decimal percentage { get; set; }

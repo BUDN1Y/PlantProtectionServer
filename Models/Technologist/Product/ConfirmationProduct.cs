@@ -1,7 +1,7 @@
 ﻿using Microsoft.Identity.Client;
 using PlantProtectionServer.ModelsDB;
 
-namespace PlantProtectionServer.Models
+namespace PlantProtectionServer.Models.Technologist.Product
 {
     public class ConfirmationProduct
     {

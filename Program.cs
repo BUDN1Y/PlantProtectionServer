@@ -1,11 +1,12 @@
 using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using PlantProtectionServer.Data.Repositories;
-using PlantProtectionServer.Models;
+using PlantProtectionServer.Models.Technologist.Product;
 using PlantProtectionServer.ModelsDB;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks.Dataflow;
-using PlantProtectionServer.Models.Recipe;
+using PlantProtectionServer.Models.Technologist.Recipe;
+using PlantProtectionServer.Endpoints;
 
 
 namespace PlantProtectionServer
@@ -37,133 +38,20 @@ namespace PlantProtectionServer
             app.MapRazorPages()
                .WithStaticAssets();
 
-            app.MapGet("/api/appTechnologi/authorization", async (string log, string pass) =>
+            app.UseStaticFiles();
+
+            app.MapTechnologistEndpoints();
+            app.MapMachineOperatorEndpoints();
+
+            app.MapGet("/", async (context) =>
             {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                DataUser? authorization = await appTechnologi.Authorization(log, pass);
-                return authorization;
-            });
-
-            app.MapGet("/api/appTechnologi/getDataProduction", async () =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                var result = await appTechnologi.GetDataProduction();
-
-                if (result != null)
-                {
-                    return Results.Ok(result);
-                }
-                else
-                {
-                    return Results.NotFound("Данные не найдены");
-                }
-            });
-
-            app.MapPost("/api/appTechnologi/addNewProduct", async (context) =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                var request = await context.Request.ReadFromJsonAsync<ConfirmationProduct>();
-                bool result = await appTechnologi.AddNewProduct(request);
-
-                if (result)
-                {
-                    context.Response.StatusCode = 200;
-                }
-                else
-                {
-                    context.Response.StatusCode = 400;
-                }
-            });
-
-            app.MapPut("/api/appTechnologi/editProduct", async (context) =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                var product = await context.Request.ReadFromJsonAsync<ConfirmationProduct>();
-                bool edit = await appTechnologi.EditProduct(product);
-                if (edit)
-                {
-                    context.Response.StatusCode = 200;
-                }
-                else
-                {
-                    context.Response.StatusCode = 400;
-                }
-            });
-
-            app.MapPut("/api/appTechnologi/changetStatusProduct", async (context) =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                var product = await context.Request.ReadFromJsonAsync<ConfirmationProduct>();
-                bool edit = await appTechnologi.EditStatusProduct(product);
-
-                if (edit)
-                {
-                    context.Response.StatusCode = 200;
-                }
-                else
-                {
-                    context.Response.StatusCode = 400;
-                }
-            });
-
-            app.MapGet("/api/appTechnologi/getDataRecipes", async () =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                return await appTechnologi.AllRecipesData();
-            });
-
-            app.MapGet("/api/appTechnologi/getDataRecipeComponets", async (int id) =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                if (id == 0)
-                {
-                    return await appTechnologi.RecipeComponets(id);
-                }
-                else
-                {
-                    return await appTechnologi.RecipeComponets(id);
-                }
-            });
-
-            app.MapGet("/api/appTechnologi/getDataRawMaterials", async () =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                return await appTechnologi.GetDataRawMaterials();
-            });
-
-            app.MapGet("/api/appTechnologi/getDataRecipesComment", async (int id, string type) =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                var result = await appTechnologi.GetRecipesComment(id, type);
-                if (result == null)
-                {
-                    return Results.NotFound();
-                }
-                else
-                {
-                    return Results.Ok(result);
-                }
-            });
-
-            app.MapPost("/api/appTechnologi/createRecipe", async (context) =>
-            {
-                AppTechnologi appTechnologi = new AppTechnologi();
-                var request = await context.Request.ReadFromJsonAsync<CreateRecipe>();
-                bool result = await appTechnologi.AddNewRecipe(request);
-
-                if (result)
-                {
-                    context.Response.StatusCode = 200;
-                }
-                else
-                {
-                    context.Response.StatusCode = 400;
-                }
+                context.Response.ContentType = "text/html; charset=utf-8";
+                await context.Response.SendFileAsync("wwwroot/Html/index.html");
             });
 
             app.Run();
 
 
         }
-    }
+}
 }

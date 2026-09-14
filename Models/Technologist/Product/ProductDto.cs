@@ -1,4 +1,4 @@
-﻿namespace PlantProtectionServer.Models
+﻿namespace PlantProtectionServer.Models.Technologist.Product
 {
     public class ProductDto
     {

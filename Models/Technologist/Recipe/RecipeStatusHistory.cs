@@ -1,4 +1,4 @@
-﻿namespace PlantProtectionServer.Models.Recipe
+﻿namespace PlantProtectionServer.Models.Technologist.Recipe
 {
     public class RecipeStatusHistory
     {
