@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+
+    <div>
+        <!--Таблица-->
+        <div style="border: 1px solid black; border-radius: 6px; padding: 5px; margin: 100px 100px">
+            <!--Шапка-->
+            <div style="display: grid; grid-template-columns: 1fr 0.5fr; border: 1px solid black">
+                <div style="display: flex; gap: 10px;">
+                    <label>Система производства СЗР</label>
+                    <label>Раздел: Активные партий</label>
+                </div>
+                <div style="display: flex; gap: 10px">
+                    <label>Online</label>
+                    <label id="infoUser"></label>
+                    <a href="/Html/Authorization.html">Выйти</a>
+                </div>
+            </div>
+
+            <!--Основной контент-->
+            <div style="display: grid; grid-template-columns: 0.4fr 1fr">
+                <!--Сылки на другие страницы-->
+                <div style="border: 1px solid black;">
+                    <a href="/Html/main.html">Активные партий</a>
+                    <a href="#"></a>
+                    <a href="#"></a>
+                    <a href="#"></a>
+                    <a href="#"></a>
+                </div>
+
+                <!--Вторая колонка-->
+                <div>
+                    <!--Фильтрация-->
+                    <div style="display: flex; flex-direction: row; border: 1px solid black; border-radius: 6px; margin: 10px; padding: 10px; gap: 10px">
+                        <label>Поиск:</label>
+                        <input type="text" />
+
+                        <label>Статус:</label>
+                        <select>
+                            <option value="1">Все</option>
+                            <option value="2">В работе</option>
+                            <option value="3">Критично</option>
+                            <option value="4">Завершено</option>
+                        </select>
+                    </div>
+
+                    <table id="tableInfo" border="1" style="">
+                        <thead>
+                            <tr>
+                                <th>№ партии</th>
+                                <th>Продукт</th>
+                                <th>Текущий шаг</th>
+                                <th>Статус партии</th>
+                                <th>Статус шага</th>
+                                <th>Предупр</th>
+                                <th>Крит. откл.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableInfoBody"></tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        dataGrid = document.getElementById("tableInfoBody");
+        let dataTable = [];
+        window.addEventListener("DOMContentLoaded", () => {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (user == null) {
+                window.location.href = "/Html/Authorization.html";
+                return;
+            }
+            document.getElementById("infoUser").textContent = `${user.fio}`;
+            LoadeTable();
+        })
+
+        async function LoadeTable() {
+            const response = await fetch("/api/appMachineOperator/actualBetchTable", {
+                method: "GET",
+                headers:
+                {
+                    "Accept": "application/json"
+                }
+            });
+
+            dataTable = await response.json();
+
+            for (let i = 0; i < dataTable.length; i++) {
+               dataGrid.append(AddDataActualBetch(dataTable[i]));
+            }
+        }
+
+        function AddDataActualBetch(data) {
+            const tr = document.createElement("tr");
+
+            const batchNumber = document.createElement("td");
+            batchNumber.textContent = data.batchNumber;
+            tr.append(batchNumber);
+
+            const productName = document.createElement("td");
+            productName.textContent = data.productName;
+            tr.append(productName);
+
+            const currentStepName = document.createElement("td");
+            currentStepName.textContent = data.currentStepName;
+            tr.append(currentStepName);
+
+            const statusName = document.createElement("td");
+            statusName.textContent = data.statusName;
+            tr.append(statusName);
+
+            const currentStepStatusName = document.createElement("td");
+            currentStepStatusName.textContent = data.currentStepStatusName;
+            tr.append(currentStepStatusName);
+
+            const hasWarnings = document.createElement("td");
+            hasWarnings.textContent = data.hasWarnings;
+            tr.append(hasWarnings);
+
+            const hasCriticals = document.createElement("td");
+            hasCriticals.textContent = data.hasCriticals;
+            tr.append(hasCriticals);
+           
+            return tr;
+
+        }
+    </script>
+</body>
+</html>

@@ -30,18 +30,17 @@ namespace PlantProtectionServer
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+
             app.UseRouting();
 
             app.UseAuthorization();
 
-            app.MapStaticAssets();
-            app.MapRazorPages()
-               .WithStaticAssets();
-
-            app.UseStaticFiles();
+            app.MapRazorPages();
+                      
 
             app.MapTechnologistEndpoints();
-            app.MapMachineOperatorEndpoints();
+            app.MapMachineOperatorEndpoints();          
 
             app.MapGet("/", async (context) =>
             {
