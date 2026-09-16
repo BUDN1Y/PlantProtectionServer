@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <div>
+        <!--Таблица-->
+        <div style="border: 1px solid black; border-radius: 6px; padding: 5px; margin: 100px 100px">
+            <!--Шапка-->
+            <div style="display: grid; grid-template-columns: 1fr 0.5fr; border: 1px solid black">
+                <div style="display: flex; gap: 10px;">
+                    <label>Система производства СЗР</label>
+                    <label>Раздел: Программа партии</label>
+                </div>
+                <div style="display: flex; gap: 10px">
+                    <label>Online</label>
+                    <label id="infoUser"></label>
+                    <a href="/Html/Authorization.html">Выйти</a>
+                </div>
+            </div>
+
+            <!--Основной контент-->
+            <div style="display: grid; grid-template-columns: 0.4fr 1fr">
+                <!--Сылки на другие страницы-->
+                <div style="border: 1px solid black; display: flex; flex-direction: column; gap: 8px; padding: 10px">
+                    <a href="/Html/main.html">Активные партий</a>
+                    <a href="/Html/programBatch.html">Программа партии</a>
+                    <a href="#"></a>
+                    <a href="#"></a>
+                    <a href="#"></a>
+                </div>
+
+                <!--Вторая колонка-->
+                <div>
+                    <!--Фильтрация-->
+                    <div style="display: flex; flex-direction: row; border: 1px solid black; border-radius: 6px; margin: 10px; padding: 10px; gap: 10px">
+                        <div style="display: flex; flex-direction: column;">
+                            <label>Номер партий</label>
+                            <label id="numberBatch"></label>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column;">
+                            <label>Продукт</label>
+                            <label id="productName"></label>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column;">
+                            <label>Статус партий</label>
+                            <label id="statusBatch"></label>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column;">
+                            <label>Текущий шаг</label>
+                            <label id="currentStep"></label>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column;">
+                            <label>Начало партий</label>
+                            <label id="dateStart"></label>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column;">
+                            <label>Отклонения</label>
+                            <label id="deviations"></label>
+                        </div>
+                    </div>
+
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; padding: 10px">
+                        <div style="display: flex; flex-direction: column">
+                            <label>Шаги партий</label>
+                            <div id="step" style="display: flex; flex-direction: column; padding: 10px; border: 1px solid black; border-radius: 6px; gap: 10px;">
+
+                            </div>
+                        </div>
+
+                        <div style="padding: 10px">
+                            <!--Вверх 2 колонки-->
+                            <div style="display: flex; flex-direction: row;">
+                                <label id="column2Step"></label>
+                                <label id="column2StatusName" style="margin: 0 0 0 auto"></label>
+                            </div>
+
+                            <!--Инструкция технолога-->
+                            <div style="margin: 10px 0 0 0; display: flex; flex-direction: column;">
+                                <label>Инструкция технолога</label>
+                                <label style="margin: 10px 0 0 0" id="column2Instruction"></label>
+                            </div>
+
+                            <!--Параметра шага-->
+                            <div id="column2ParametrsStep">
+                                <label>Параметры шага</label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const stepTable = document.getElementById("step");
+        const column2Step = document.getElementById("column2Step");
+        const column2StatusName = document.getElementById("column2StatusName");
+        const column2Instruction = document.getElementById("column2Instruction");
+        const column2ParametrsStep = document.getElementById("column2ParametrsStep");
+        const numberBatch = document.getElementById("numberBatch");
+        const productName = document.getElementById("productName");
+        const statusBatch = document.getElementById("statusBatch");
+        const currentStep = document.getElementById("currentStep");
+        const dateStart = document.getElementById("dateStart");
+        const deviations = document.getElementById("deviations");
+
+        let batchSelected;
+        let allInfoProduction;
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            batchSelected = JSON.parse(localStorage.getItem('batch') || 'null');
+            if (user == null) {
+                window.location.href = "/Html/Authorization.html";
+                return;
+            }
+
+            document.getElementById("infoUser").textContent = `${user.fio}`;
+
+            numberBatch.textContent = `${batchSelected.batchNumber}`;
+            productName.textContent = `${batchSelected.productName}`;
+            statusBatch.textContent = `${batchSelected.statusName}`;
+            currentStep.textContent = `${batchSelected.currentStepName}`;
+            dateStart.textContent = `${batchSelected.startDate}`;
+
+            if (batchSelected.hasWarnings == true) {
+                deviations.textContent = "Есть";
+            }
+            else {
+                deviations.textContent = "-"
+            }
+
+            LoadeTable();
+        })
+
+        async function LoadeTable() {
+            const batchId = batchSelected.id;
+            const batchTechMapId = batchSelected.techMapId;
+            const urlParametr = new URLSearchParams({ batchId, batchTechMapId });
+
+            const response = await fetch(`/api/appMachineOperator/programBetch?${urlParametr}`, {
+                method: "GET",
+                headers:
+                {
+                    "Accept": "application/json"
+                }
+            });
+
+            const result = await response.json();
+            allInfoProduction = result;
+            let batcStep = allInfoProduction.batchStepExecutions;
+
+            for (let i = 0; i < allInfoProduction.batchStepExecutions.length; i++) {
+                const divStep = document.createElement("div");
+
+                divStep.style.display = "flex";
+                divStep.style.flexDirection = "column";
+                divStep.style.padding = "8px";
+                divStep.style.border = "1px solid #ccc";
+                divStep.style.borderRadius = "6px";
+                divStep.style.backgroundColor = "#f5f5f5";
+                divStep.style.fontSize = "14px";
+
+                const labelStepNumber = document.createElement("label");
+                labelStepNumber.textContent = `Шаг номер: ${i + 1}`;
+
+                divStep.append(labelStepNumber);
+
+                const labelComment = document.createElement("label");
+                labelComment.textContent = batcStep[i].comment;
+
+                divStep.append(labelComment);
+
+                const labelStatus = document.createElement("label");
+                labelStatus.textContent = batcStep[i].statusName;
+
+                divStep.append(labelStatus);
+
+                stepTable.append(divStep);
+            }
+
+            FillColumn2(allInfoProduction.batchStepExecutions.length - 1, allInfoProduction.techMapSteps.length - 1);
+        }
+
+        function FillColumn2(batchStepIndex, techMapStepsIndex) {
+            column2Step.textContent = `Шаг ${batchStepIndex + 1}: ${allInfoProduction.techMapSteps[batchStepIndex].name}`;
+            column2StatusName.textContent = `${allInfoProduction.batchStepExecutions[batchStepIndex].statusName}`;
+
+            column2Instruction.style.padding = "8px";
+            column2Instruction.style.border = "1px solid #ccc";
+            column2Instruction.style.borderRadius = "6px";
+            column2Instruction.style.backgroundColor = "#f5f5f5";
+            column2Instruction.style.fontSize = "14px";
+            column2Instruction.textContent = `${allInfoProduction.techMapSteps[batchStepIndex].instruction}`;
+
+
+            //Параметры шага
+
+            const divTemperature = document.createElement("div");
+            divTemperature.style.display = "flex";
+            divTemperature.style.flexDirection = "column";
+            divTemperature.style.padding = "8px";
+            divTemperature.style.border = "1px solid #ccc";
+            divTemperature.style.borderRadius = "6px";
+            divTemperature.style.backgroundColor = "#f5f5f5";
+            divTemperature.style.fontSize = "14px";
+
+            const labelHow = document.createElement("label");
+            labelHow.textContent = "Температура";
+
+            const labelStandard = document.createElement("label");
+            if (allInfoProduction.techMapSteps[batchStepIndex].plannedTemp == null) {
+                labelStandard.textContent = "Отсутствует";
+            }
+            else {
+                labelStandard.textContent = `Норма: ${allInfoProduction.techMapSteps[batchStepIndex].toleranceTempMin} - ${allInfoProduction.techMapSteps[batchStepIndex].toleranceTempMax}`;
+            }
+
+            const inputData = document.createElement("input");
+            inputData.type = "text";
+            inputData.id = "inputTemperatura"
+
+            divTemperature.append(labelHow);
+            divTemperature.append(labelStandard);
+
+            column2ParametrsStep.append(divTemperature);
+        }
+
+
+
+
+
+    </script>
+</body>
+</html>

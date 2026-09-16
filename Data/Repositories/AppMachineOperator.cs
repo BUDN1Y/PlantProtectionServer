@@ -2,6 +2,7 @@
 using PlantProtectionServer.Data.Context;
 using PlantProtectionServer.Models.MachineOperator;
 using PlantProtectionServer.ModelsDB;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace PlantProtectionServer.Data.Repositories
@@ -58,38 +59,38 @@ namespace PlantProtectionServer.Data.Repositories
                                 .Select(x => new ActualBetch()
                                 {
                                     id = x.Id,
+                                    techMapId = x.TechMapVersionId,
                                     batchNumber = x.BatchNumber,
                                     statusName = x.Status.Name,
                                     statusColor = (x.Status.Color == null) ? "#999" : x.Status.Color,
                                     productName = x.Product.Name,
 
-                                    // Текущий шаг: ищем активный BatchStepExecution (статус "step_in_progress")
+
                                     currentStepName = x.BatchStepExecutions
                                          .Where(bse => bse.Status.Code == "step_in_progress")
                                          .Select(bse => bse.TechStep.Name)
                                          .FirstOrDefault(),
 
-                                    // Статус текущего шага
+
                                     currentStepStatusName = x.BatchStepExecutions
                                          .Where(bse => bse.Status.Code == "step_in_progress")
                                          .Select(bse => bse.Status.Name)
                                          .FirstOrDefault(),
 
-                                    // Цвет статуса шага
+
                                     currentStepStatusColor = x.BatchStepExecutions
                                          .Where(bse => bse.Status.Code == "step_in_progress")
                                          .Select(bse => bse.Status.Color)
                                          .FirstOrDefault(),
 
-                                    // Есть ли предупреждения (severity = warning, статус не закрыт)
                                     hasWarnings = x.Deviations.Any(d => d.Severity == "warning"
                                                                       && d.Status.Code != "dev_closed"),
 
-                                    // Есть ли критические отклонения
+
                                     hasCriticals = x.Deviations.Any(d => d.Severity == "critical"
                                                                        && d.Status.Code != "dev_closed"),
 
-                                    // Время начала партии
+
                                     startDate = x.StartDate,
 
 
@@ -98,6 +99,64 @@ namespace PlantProtectionServer.Data.Repositories
                                  .ToListAsync();
 
                 return dataBetch;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
+        }
+
+        public async Task<ProgramBatch?> GetProgramBatch(int batchId, int techMapId)
+        {
+            try
+            {
+                var batchStepExecutions = await context.BatchStepExecutions.Where(x => x.BatchId == batchId).ToListAsync();
+                var techMapStep = await context.TechMapSteps.Where(x => x.TechMapId == techMapId).ToListAsync();
+                var productionBatch = await context.ProductionBatches.FirstOrDefaultAsync(x => x.Id == batchId);
+                var statusName = await context.Statuses.ToListAsync();
+
+                var batchStepExecutionsProcessed = batchStepExecutions
+    .Select(x => new Models.MachineOperator.BatchStepExecution
+    {
+        id = x.Id,
+        statusName = statusName.FirstOrDefault(y => y.Id == x.StatusId)?.Name ?? "",
+        startedAt = x.StartedAt,
+        finishedAt = x.FinishedAt,
+        actualTemp = x.ActualTemp,
+        actualPressure = x.ActualPressure,
+        actualTime = x.ActualTime,
+        comment = x.Comment
+    })
+    .ToList();
+
+                var techMapStepProcessed = techMapStep
+    .Select(x => new Models.MachineOperator.TechMapStep
+    {
+        id = x.Id,
+        stepNumber = x.StepNumber,
+        name = x.Name,
+        stepType = x.StepType,
+        instruction = x.Instruction,
+        plannedTemp = x.PlannedTemp,
+        plannedPressure = x.PlannedPressure,
+        plannedTimeMin = x.PlannedTimeMin,
+        plannedTimeMax = x.PlannedTimeMax,
+        toleranceTempMin = x.ToleranceTempMin,
+        toleranceTempMax = x.ToleranceTempMax,
+        tolerancePressureMin = x.TolerancePressureMin,
+        tolerancePressureMax = x.TolerancePressureMax
+    })
+    .ToList();
+
+                ProgramBatch programBatch = new ProgramBatch()
+                {
+                    batchStepExecutions = batchStepExecutionsProcessed.ToList(),
+                    techMapSteps = techMapStepProcessed.ToList()
+                };
+
+                Console.WriteLine(JsonSerializer.Serialize(programBatch));
+                return programBatch;
             }
             catch (Exception ex)
             {

@@ -41,6 +41,21 @@ namespace PlantProtectionServer.Endpoints
 
             });
 
+            group.MapGet("/programBetch", async (int batchId, int batchTechMapId, HttpContext context) =>
+            {
+                AppMachineOperator appMachineOperator = new AppMachineOperator();
+                var programBatch = await appMachineOperator.GetProgramBatch(batchId, batchTechMapId);
+
+                if (programBatch != null)
+                {
+                    return Results.Ok(programBatch);
+                }
+                else
+                {
+                    return Results.NotFound();
+                }
+            });
+
             return app;
         }
     }

@@ -3,6 +3,7 @@
     public class ActualBetch
     {
         public int id { get; set; }
+        public int techMapId { get; set; }
         public string batchNumber { get; set; } = null!;
         public string statusName { get; set; } = null!;
         public string statusColor { get; set; } = null!;

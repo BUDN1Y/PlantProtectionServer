@@ -25,9 +25,9 @@
             <!--Основной контент-->
             <div style="display: grid; grid-template-columns: 0.4fr 1fr">
                 <!--Сылки на другие страницы-->
-                <div style="border: 1px solid black;">
+                <div style="border: 1px solid black; display: flex; flex-direction: column; gap: 8px; padding: 10px">
                     <a href="/Html/main.html">Активные партий</a>
-                    <a href="#"></a>
+                    <a href="#">Программа партии</a>
                     <a href="#"></a>
                     <a href="#"></a>
                     <a href="#"></a>
@@ -38,14 +38,18 @@
                     <!--Фильтрация-->
                     <div style="display: flex; flex-direction: row; border: 1px solid black; border-radius: 6px; margin: 10px; padding: 10px; gap: 10px">
                         <label>Поиск:</label>
-                        <input type="text" />
+                        <input type="text" id="searchBatchOrProduct" />
 
                         <label>Статус:</label>
-                        <select>
-                            <option value="1">Все</option>
-                            <option value="2">В работе</option>
-                            <option value="3">Критично</option>
-                            <option value="4">Завершено</option>
+                        <select id="filterStatus">
+                            <option value="0">Все</option>
+                            <option value="1">Запланирована</option>
+                            <option value="2">Запущена</option>
+                            <option value="3">В процессе</option>
+                            <option value="4">Приостановлена</option>
+                            <option value="5">Завершена</option>
+                            <option value="6">Заблокирована</option>
+                            <option value="7">Отменена</option>
                         </select>
                     </div>
 
@@ -70,17 +74,68 @@
     </div>
 
     <script>
-        dataGrid = document.getElementById("tableInfoBody");
+        const searchInput = document.getElementById("searchBatchOrProduct");
+        const filterStatus = document.getElementById("filterStatus");
+        const dataGrid = document.getElementById("tableInfoBody");
         let dataTable = [];
+        let dataTableBufer = [];
+        let textInputed = "";
+        let statusBatchSelected = "Все";
+
         window.addEventListener("DOMContentLoaded", () => {
             const user = JSON.parse(localStorage.getItem('user') || 'null');
             if (user == null) {
                 window.location.href = "/Html/Authorization.html";
                 return;
             }
+
             document.getElementById("infoUser").textContent = `${user.fio}`;
             LoadeTable();
         })
+
+        filterStatus.addEventListener("change", FilterStatus);
+        searchInput.addEventListener("input", FilterSearch);
+
+        function FilterStatus(event) {
+            const select = event.target;
+            statusBatchSelected = select.options[select.selectedIndex].text;
+            Filter();
+        }
+
+        function FilterSearch(event) {
+            textInputed = event.target.value;
+            Filter();
+        }
+
+        function Filter() {
+            dataTableBufer = dataTable;
+
+            if (textInputed != "") {
+                dataTableBufer = dataTableBufer.filter(x => x.batchNumber.includes(textInputed) || x.productName.includes(textInputed))
+                dataGrid.innerHTML = "";
+
+                for (let i = 0; i < dataTableBufer.length; i++) {
+                    dataGrid.append(AddDataActualBetch(dataTableBufer[i]));
+                }
+            }
+
+            if (statusBatchSelected != "Все") {
+                dataTableBufer = dataTableBufer.filter(x => x.statusName.includes(statusBatchSelected));
+                dataGrid.innerHTML = "";
+
+                for (let i = 0; i < dataTableBufer.length; i++) {
+                    dataGrid.append(AddDataActualBetch(dataTableBufer[i]));
+                }
+            }
+            
+            if (statusBatchSelected == "Все" && textInputed == "") {
+                dataGrid.innerHTML = "";
+                for (let i = 0; i < dataTable.length; i++) {
+                    dataGrid.append(AddDataActualBetch(dataTable[i]));
+                }
+            }
+        }
+     
 
         async function LoadeTable() {
             const response = await fetch("/api/appMachineOperator/actualBetchTable", {
@@ -94,7 +149,7 @@
             dataTable = await response.json();
 
             for (let i = 0; i < dataTable.length; i++) {
-               dataGrid.append(AddDataActualBetch(dataTable[i]));
+                dataGrid.append(AddDataActualBetch(dataTable[i]));
             }
         }
 
@@ -121,17 +176,45 @@
             currentStepStatusName.textContent = data.currentStepStatusName;
             tr.append(currentStepStatusName);
 
+
             const hasWarnings = document.createElement("td");
-            hasWarnings.textContent = data.hasWarnings;
+            if (data.hasWarnings) {
+                hasWarnings.textContent = "+";
+            }
+            else {
+                hasWarnings.textContent = "-";
+            }
             tr.append(hasWarnings);
 
             const hasCriticals = document.createElement("td");
-            hasCriticals.textContent = data.hasCriticals;
+            if (data.hasCriticals) {
+                hasCriticals.textContent = "+";
+            }
+            else {
+                hasCriticals.textContent = "-";
+            }
             tr.append(hasCriticals);
-           
+
+            const td = document.createElement("td");
+            const buttonEntry = document.createElement("button");
+
+            buttonEntry.textContent = "Перейти";
+            buttonEntry.addEventListener("click", () => Entry_Click(data.id));
+
+            td.append(buttonEntry);
+            tr.append(td);
+          
+     
             return tr;
 
         }
+
+        function Entry_Click(id) {
+            localStorage.setItem('batch', JSON.stringify(dataTable.find(x => x.id == id)));
+            window.location.href = "/Html/programBatch.html";
+        }
+
+
     </script>
 </body>
 </html>
