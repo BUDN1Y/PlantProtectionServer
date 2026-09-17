@@ -15,5 +15,6 @@
         public decimal? toleranceTempMax { get; set; }
         public decimal? tolerancePressureMin { get; set; }
         public decimal? tolerancePressureMax { get; set; }
+        public bool? isMandatory { get; set; }
     }
 }

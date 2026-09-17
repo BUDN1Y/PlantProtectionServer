@@ -3,6 +3,8 @@
     public class BatchStepExecution
     {
         public int id { get; set; }
+        public int batchId { get; set; }
+        public int techStepId { get; set; }
         public string statusName { get; set; } = null!;
         public DateTime? startedAt { get; set; }
         public DateTime? finishedAt { get; set; }

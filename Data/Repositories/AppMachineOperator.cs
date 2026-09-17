@@ -112,7 +112,7 @@ namespace PlantProtectionServer.Data.Repositories
             try
             {
                 var batchStepExecutions = await context.BatchStepExecutions.Where(x => x.BatchId == batchId).ToListAsync();
-                var techMapStep = await context.TechMapSteps.Where(x => x.TechMapId == techMapId).ToListAsync();
+                var techMapStep = await context.TechMapSteps.ToListAsync();
                 var productionBatch = await context.ProductionBatches.FirstOrDefaultAsync(x => x.Id == batchId);
                 var statusName = await context.Statuses.ToListAsync();
 
@@ -121,6 +121,8 @@ namespace PlantProtectionServer.Data.Repositories
     {
         id = x.Id,
         statusName = statusName.FirstOrDefault(y => y.Id == x.StatusId)?.Name ?? "",
+        batchId = x.BatchId,
+        techStepId = x.TechStepId,
         startedAt = x.StartedAt,
         finishedAt = x.FinishedAt,
         actualTemp = x.ActualTemp,
@@ -145,7 +147,8 @@ namespace PlantProtectionServer.Data.Repositories
         toleranceTempMin = x.ToleranceTempMin,
         toleranceTempMax = x.ToleranceTempMax,
         tolerancePressureMin = x.TolerancePressureMin,
-        tolerancePressureMax = x.TolerancePressureMax
+        tolerancePressureMax = x.TolerancePressureMax,
+        isMandatory = x.IsMandatory
     })
     .ToList();
 
@@ -162,6 +165,49 @@ namespace PlantProtectionServer.Data.Repositories
             {
                 Console.WriteLine(ex.ToString());
                 return null;
+            }
+        }
+
+        public async void PutEndBatch(int batchId, int techMapStep, decimal? actualTemp, int? actualTime, decimal? actualPressure)
+        {
+            try
+            {
+                var batchStepExecution = await context.BatchStepExecutions.FirstAsync(x => x.BatchId == batchId && x.TechStepId == techMapStep);
+                batchStepExecution.StatusId = 33;
+                batchStepExecution.FinishedAt = DateTime.Now;
+                batchStepExecution.FinishedBy = 2;
+                batchStepExecution.ActualTemp = actualTemp;
+                batchStepExecution.ActualTime = actualTime;
+
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex}");
+            }
+        }
+
+        public async Task PostStartBatch(int batchId, int techMapStep, string comment)
+        {
+            try
+            {
+                var newBatchStepExecution = new ModelsDB.BatchStepExecution()
+                {
+                    BatchId = batchId,
+                    TechStepId = techMapStep,
+                    StatusId = 32,
+                    StartedAt = DateTime.Now,
+                    StartedBy = 2,
+                    Comment = comment
+                };
+
+                context.BatchStepExecutions.Add(newBatchStepExecution);
+
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex}");
             }
         }
     }
