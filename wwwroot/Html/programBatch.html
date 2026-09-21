@@ -106,7 +106,7 @@
                         <button id="startStep">Начать шаг</button>
                         <button id="endStep">Завершить шаг</button>
                         <label>Комментарий:</label>
-                        <input id="comment" type="text"/>
+                        <input id="comment" type="text" />
                     </div>
                 </div>
             </div>
@@ -130,307 +130,266 @@
         const deviations = document.getElementById("deviations");
         const comment = document.getElementById("comment");
 
-        let batchSelected;
-        let tehMapStepSelected;
+        let batchSelected;       
+        let batchId;               
+        let techStepIdSelected;    
         let allInfoProduction;
-
 
         startStepButton.addEventListener("click", StartBatch);
         endStepButton.addEventListener("click", endBatch);
 
 
-        async function StartBatch() {
-            techStepCurrent = allInfoProduction.batchStepExecutions.at(-1).techStepId;
-            techStepCurrent += 1;
-            const parametr = new URLSearchParams()
-            parametr.set("batchSelected", batchSelected);
-            parametr.set("tehMapStepSelected", techStepCurrent);
+        function findTechStepByExec(exec) {
+            return allInfoProduction.techMapSteps.find(s => s.stepNumber === exec.techStepId);
+        }
 
-            if (comment.value !== undefined) parametr.set("comment", comment);
-            
-            await fetch(`/api/appMachineOperator/startBatch?${parametr}`, {
+        async function StartBatch() {
+            if (!allInfoProduction) { alert("Данные ещё не загружены"); return; }
+
+            const executions = allInfoProduction.batchStepExecutions || [];
+            const techSteps = allInfoProduction.techMapSteps || [];
+
+            let nextStep = null;
+
+            if (executions.length === 0) {
+                nextStep = [...techSteps].sort((a, b) => a.stepNumber - b.stepNumber)[0];
+            } else {
+                const lastExec = executions[executions.length - 1];
+                const lastTechStep = findTechStepByExec(lastExec);
+                if (!lastTechStep) { alert("Не найден текущий шаг"); return; }
+                nextStep = techSteps.find(s => s.stepNumber === lastTechStep.stepNumber + 1);
+            }
+
+            if (!nextStep) { alert("Все шаги выполнены"); return; }
+
+            const params = new URLSearchParams();
+            params.set("batchSelected", batchId);
+            params.set("tehMapStepSelected", nextStep.stepNumber); 
+            params.set("comment", comment.value ?? "");
+
+            const resp = await fetch(`/api/appMachineOperator/startBatch?${params}`, {
                 method: "POST",
-                headers: {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
+
+            if (!resp.ok) { alert("Ошибка запуска: " + resp.status); return; }
+            location.reload();
         }
 
         async function endBatch() {
             const inputTemperatur = document.getElementById("inputTemperatura");
             const inputPressure = document.getElementById("inputPressure");
             const inputTime = document.getElementById("inputTime");
-            
-            let actualTemp;
-            let actualTime;
-            let actualPressure;
+
+            let actualTemp, actualPressure, actualTime;
 
             if (inputTemperatur) {
                 actualTemp = inputTemperatur.value.trim();
-                if (actualTemp === "") {
-                    alert("Температура: заполните поле");
-                    inputTemperatur.focus();
-                    return;
-                }
-                if (Number.isNaN(Number(actualTemp))) {
-                    alert("Температура: введите число");
-                    inputTemperatur.focus();
-                    return;
-                }
+                if (actualTemp === "") { alert("Температура: заполните поле"); inputTemperatur.focus(); return; }
+                if (!Number.isFinite(Number(actualTemp))) { alert("Температура: введите число"); inputTemperatur.focus(); return; }
             }
-
             if (inputPressure) {
                 actualPressure = inputPressure.value.trim();
-                if (actualTime === "") {
-                    alert("Давление: заполните поле");
-                    inputPressure.focus();
-                    return;
-                }
-                if (Number.isNaN(Number(actualPressure))) {
-                    alert("Давление: введите число");
-                    inputPressure.focus();
-                    return;
-                }
+                if (actualPressure === "") { alert("Давление: заполните поле"); inputPressure.focus(); return; }
+                if (!Number.isFinite(Number(actualPressure))) { alert("Давление: введите число"); inputPressure.focus(); return; }
             }
-
             if (inputTime) {
                 actualTime = inputTime.value.trim();
-                if (inputTime === "") {
-                    alert("Время: заполните поле");
-                    inputTime.focus();
-                    return;
-                }
-                if (Number.isNaN(Number(inputTime))) {
-                    alert("Время: введите число");
-                    inputTime.focus();
-                    return;
-                }
+                if (actualTime === "") { alert("Время: заполните поле"); inputTime.focus(); return; }
+                if (!Number.isFinite(Number(actualTime))) { alert("Время: введите число"); inputTime.focus(); return; }
             }
 
+            if (!techStepIdSelected) { alert("Шаг не выбран"); return; }
 
             const params = new URLSearchParams();
-            params.set("batchSelected", batchSelected);
-            params.set("tehMapStepSelected", tehMapStepSelected);
+            params.set("batchSelected", batchId);
+            params.set("tehMapStepSelected", techStepIdSelected); // это stepNumber
 
             if (actualTemp !== undefined) params.set("actualTemp", actualTemp);
             if (actualTime !== undefined) params.set("actualTime", actualTime);
             if (actualPressure !== undefined) params.set("actualPressure", actualPressure);
-     
-            await fetch(`/api/appMachineOperator/endBatch?${params}`, {
+
+            const resp = await fetch(`/api/appMachineOperator/endBatch?${params}`, {
                 method: "PUT",
-                headers: {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
 
-
+            if (!resp.ok) { alert("Ошибка завершения: " + resp.status); return; }
+            location.reload();
         }
 
-        
         window.addEventListener("DOMContentLoaded", () => {
             const user = JSON.parse(localStorage.getItem('user') || 'null');
             batchSelected = JSON.parse(localStorage.getItem('batch') || 'null');
-            if (user == null) {
-                window.location.href = "/Html/Authorization.html";
-                return;
-            }
 
-            document.getElementById("infoUser").textContent = `${user.fio}`;
+            if (!user) { window.location.href = "/Html/Authorization.html"; return; }
+            if (!batchSelected) { alert("Партия не выбрана"); window.location.href = "/Html/main.html"; return; }
 
-            numberBatch.textContent = `${batchSelected.batchNumber}`;
-            productName.textContent = `${batchSelected.productName}`;
-            statusBatch.textContent = `${batchSelected.statusName}`;
-            currentStep.textContent = `${batchSelected.currentStepName}`;
-            dateStart.textContent = `${batchSelected.startDate}`;
+            batchId = batchSelected.id;
 
-            if (batchSelected.hasWarnings == true) {
-                deviations.textContent = "Есть";
-            }
-            else {
-                deviations.textContent = "-"
-            }
+            document.getElementById("infoUser").textContent = user.fio;
+            numberBatch.textContent = batchSelected.batchNumber ?? "-";
+            productName.textContent = batchSelected.productName ?? "-";
+            statusBatch.textContent = batchSelected.statusName ?? "-";
+            currentStep.textContent = batchSelected.currentStepName ?? "-";
+            dateStart.textContent = batchSelected.startDate ?? "-";
+            deviations.textContent = batchSelected.hasWarnings ? "Есть" : "-";
 
             LoadeTable();
-        })
+        });
 
         async function LoadeTable() {
-            const batchId = batchSelected.id;
-            const batchTechMapId = batchSelected.techMapId;
-            const urlParametr = new URLSearchParams({ batchId, batchTechMapId });
+            const urlParametr = new URLSearchParams({
+                batchId: batchId,
+                batchTechMapId: batchSelected.techMapId
+            });
 
             const response = await fetch(`/api/appMachineOperator/programBetch?${urlParametr}`, {
                 method: "GET",
-                headers:
-                {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
 
-            const result = await response.json();
-            allInfoProduction = result;
-            let batcStep = allInfoProduction.batchStepExecutions;
+            if (!response.ok) { alert("Не удалось загрузить данные"); return; }
 
-            for (let i = 0; i < allInfoProduction.batchStepExecutions.length; i++) {
+            allInfoProduction = await response.json();
+            RefreshColumn2();
+        }
+
+        function RefreshColumn2() {
+            stepTable.innerHTML = "";
+            const executions = allInfoProduction.batchStepExecutions || [];
+
+            for (let i = 0; i < executions.length; i++) {
+                const exec = executions[i];
+                const techStep = findTechStepByExec(exec);
+
                 const divStep = document.createElement("div");
-
                 divStep.classList.add("cardParametr");
 
+                const l1 = document.createElement("label");
+                l1.textContent = `Шаг номер: ${techStep?.stepNumber ?? "?"}`;
+                divStep.append(l1);
 
-                const labelStepNumber = document.createElement("label");
-                labelStepNumber.textContent = `Шаг номер: ${i + 1}`;
+                const l2 = document.createElement("label");
+                l2.textContent = exec.comment ?? "";
+                divStep.append(l2);
 
-                divStep.append(labelStepNumber);
+                const l3 = document.createElement("label");
+                l3.textContent = exec.statusName ?? "";
+                divStep.append(l3);
 
-                const labelComment = document.createElement("label");
-                labelComment.textContent = batcStep[i].comment;
-
-                divStep.append(labelComment);
-
-                const labelStatus = document.createElement("label");
-                labelStatus.textContent = batcStep[i].statusName;
-
-                const buttonEntry = document.createElement("button");
-                buttonEntry.type = "button";
-                buttonEntry.textContent = "Перейти в шаг";
-                buttonEntry.addEventListener("click", () => FillColumn2(i, i + 1))
-
-
-                divStep.append(labelStatus);
-
-                divStep.append(buttonEntry);
-
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.textContent = "Перейти в шаг";
+                btn.addEventListener("click", () => FillColumn2(i));
+                divStep.append(btn);
 
                 stepTable.append(divStep);
             }
-            let a = allInfoProduction.batchStepExecutions.length - 1;
-            console.log(allInfoProduction.batchStepExecutions);
-            console.log(allInfoProduction.techMapSteps)
-            FillColumn2(allInfoProduction.batchStepExecutions.length - 1, allInfoProduction.techMapSteps.find(x => x.id == allInfoProduction.batchStepExecutions[a].techStepId).stepNumber);
+
+            if (executions.length > 0) {
+                FillColumn2(executions.length - 1);
+            } else if ((allInfoProduction.techMapSteps || []).length > 0) {
+                const first = [...allInfoProduction.techMapSteps]
+                    .sort((a, b) => a.stepNumber - b.stepNumber)[0];
+                FillColumn2ByTechStep(first, null);
+            }
         }
 
-        function FillColumn2(batchStepIndex, techMapStepsIndex) {
-            batchSelected = allInfoProduction.batchStepExecutions[batchStepIndex].batchId;
-            tehMapStepSelected = techMapStepsIndex;
+        function FillColumn2(index) {
+            const exec = allInfoProduction.batchStepExecutions[index];
+            const techStep = findTechStepByExec(exec);
+            if (!techStep) { alert("Шаг не найден в карте"); return; }
+            FillColumn2ByTechStep(techStep, exec);
+        }
 
-            console.log(batchSelected);
-            console.log(tehMapStepSelected);
+        function FillColumn2ByTechStep(techStep, exec) {
+            techStepIdSelected = techStep.stepNumber;
 
             column2ParametrsStep.innerHTML = "";
 
-            let isTemperature = false;
-            let isPersure = false;
-            let isTime = false;
+            column2Step.textContent = `Шаг ${techStep.stepNumber}: ${techStep.name}`;
+            column2StatusName.textContent = exec?.statusName ?? "Не начат";
 
-            column2Step.textContent = `Шаг ${batchStepIndex + 1}: ${allInfoProduction.techMapSteps[batchStepIndex].name}`;
-            column2StatusName.textContent = `${allInfoProduction.batchStepExecutions[batchStepIndex].statusName}`;
-
-            //Инструкция
             column2Instruction.classList.add("cardParametr");
-            column2Instruction.textContent = `${allInfoProduction.techMapSteps[batchStepIndex].instruction}`;
+            column2Instruction.textContent = techStep.instruction ?? "";
 
-            let isMandatory = allInfoProduction.techMapSteps[batchStepIndex].isMandatory;
-            let MandatoryText = isMandatory ? "Шаг Обязательный" : "Шаг не обязательный";
+            mandatoryStep.textContent = techStep.isMandatory
+                ? "Шаг обязательный" : "Шаг не обязательный";
 
+            // Температура
+            {
+                const div = document.createElement("div");
+                div.classList.add("cardParametr");
 
-            //Обязательный шаг
-            mandatoryStep.textContent = MandatoryText;
+                const title = document.createElement("label");
+                title.textContent = "Температура";
+                div.append(title);
 
-
-            //Параметры шага
-
-
-            //Температура
-            const divTemperature = document.createElement("div");
-            divTemperature.classList.add("cardParametr");
-
-            const labelHowTemperature = document.createElement("label");
-            labelHowTemperature.textContent = "Температура";
-
-            const labelStandardTemperature = document.createElement("label");
-            if (allInfoProduction.techMapSteps[batchStepIndex].plannedTemp == null) {
-                labelStandardTemperature.textContent = "Отсутствует";
-            }
-            else {
-                isTemperature = true;
-                labelStandardTemperature.textContent = `Норма: ${allInfoProduction.techMapSteps[batchStepIndex].toleranceTempMin} - ${allInfoProduction.techMapSteps[batchStepIndex].toleranceTempMax}`;
-            }
-
-
-
-            divTemperature.append(labelHowTemperature);
-            divTemperature.append(labelStandardTemperature);
-
-            if (isTemperature) {
-                const inputDataTemperature = document.createElement("input");
-                inputDataTemperature.type = "text";
-                inputDataTemperature.id = "inputTemperatura";
-                divTemperature.append(inputDataTemperature);
+                const norm = document.createElement("label");
+                if (techStep.plannedTemp == null) {
+                    norm.textContent = "Отсутствует";
+                } else {
+                    norm.textContent = `Норма: ${techStep.toleranceTempMin ?? "-"} - ${techStep.toleranceTempMax ?? "-"}`;
+                    const inp = document.createElement("input");
+                    inp.type = "text";
+                    inp.id = "inputTemperatura";
+                    div.append(norm, inp);
+                    column2ParametrsStep.append(div);
+                    return_skip_temp = true;
+                }
+                if (techStep.plannedTemp == null) {
+                    div.append(norm);
+                }
+                column2ParametrsStep.append(div);
             }
 
-            column2ParametrsStep.append(divTemperature);
+            // Давление
+            {
+                const div = document.createElement("div");
+                div.classList.add("cardParametr");
 
-            //Давление
-            const divPressure = document.createElement("div");
-            divPressure.classList.add("cardParametr");
+                const title = document.createElement("label");
+                title.textContent = "Давление";
+                div.append(title);
 
-            const lavelHowPressure = document.createElement("label");
-            lavelHowPressure.textContent = "Давление";
-
-            const labelStandardPressure = document.createElement("label");
-            if (allInfoProduction.techMapSteps[batchStepIndex].plannedPressure == null) {
-                labelStandardPressure.textContent = "Отсутствует";
-            }
-            else {
-                isPersure = true;
-                labelStandardPressure.textContent = `Норма: ${allInfoProduction.techMapSteps[batchStepIndex].tolerancePressureMin} - ${allInfoProduction.techMapSteps[batchStepIndex].tolerancePressureMax}`;
-            }
-
-            divPressure.append(lavelHowPressure);
-            divPressure.append(labelStandardPressure);
-
-            if (isPersure) {
-                const inputDataPressure = document.createElement("input");
-                inputDataPressure.type = "text";
-                inputDataPressure.id = "inputPressure";
-                divPressure.append(inputDataPressure);
+                const norm = document.createElement("label");
+                if (techStep.plannedPressure == null) {
+                    norm.textContent = "Отсутствует";
+                    div.append(norm);
+                } else {
+                    norm.textContent = `Норма: ${techStep.tolerancePressureMin ?? "-"} - ${techStep.tolerancePressureMax ?? "-"}`;
+                    const inp = document.createElement("input");
+                    inp.type = "text";
+                    inp.id = "inputPressure";
+                    div.append(norm, inp);
+                }
+                column2ParametrsStep.append(div);
             }
 
-            column2ParametrsStep.append(divPressure);
+            // Время
+            {
+                const div = document.createElement("div");
+                div.classList.add("cardParametr");
 
-            //Время работы
+                const title = document.createElement("label");
+                title.textContent = `Время работы ${techStep.name}`;
+                div.append(title);
 
-            const divTime = document.createElement("div");
-            divTime.classList.add("cardParametr");
-
-            const lavelHowTime = document.createElement("label");
-            lavelHowTime.textContent = `Время работы ${allInfoProduction.techMapSteps[batchStepIndex].name}`
-
-            const labelStandardTime = document.createElement("label");
-            if (allInfoProduction.techMapSteps[batchStepIndex].plannedPressure == null) {
-                labelStandardTime.textContent = "Отсутствует";
+                const norm = document.createElement("label");
+                if (techStep.plannedTimeMin == null && techStep.plannedTimeMax == null) {
+                    norm.textContent = "Отсутствует";
+                    div.append(norm);
+                } else {
+                    norm.textContent = `Норма: ${techStep.plannedTimeMin ?? "-"} - ${techStep.plannedTimeMax ?? "-"}`;
+                    const inp = document.createElement("input");
+                    inp.type = "text";
+                    inp.id = "inputTime";
+                    div.append(norm, inp);
+                }
+                column2ParametrsStep.append(div);
             }
-            else {
-                isTime = true;
-                labelStandardTime.textContent = `Норма: ${allInfoProduction.techMapSteps[batchStepIndex].plannedTimeMin} - ${allInfoProduction.techMapSteps[batchStepIndex].plannedTimeMax}`;
-            }
-
-            divTime.append(lavelHowTime);
-            divTime.append(labelStandardTime);
-
-            if (isTime) {
-                const inputDataTime = document.createElement("input");
-                inputDataTime.type = "text";
-                inputDataTime.id = "inputTime";
-                divTime.append(inputDataTime);
-            }
-
-            column2ParametrsStep.append(divTime);
         }
-
-
-
-
-
     </script>
 </body>
 </html>

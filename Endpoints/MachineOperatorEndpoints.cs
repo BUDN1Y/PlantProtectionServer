@@ -13,6 +13,7 @@ namespace PlantProtectionServer.Endpoints
 
             group.MapGet("/authorization", async (string log, string pass, HttpContext context) =>
             {
+                Console.WriteLine("Успех");
                 AppMachineOperator machineOperator = new AppMachineOperator();
                 var user = await machineOperator.Authorization(log, pass);
 
@@ -55,18 +56,20 @@ namespace PlantProtectionServer.Endpoints
                     return Results.NotFound();
                 }
             });
-          
-            group.MapPut("/endBatch", (int batchSelected, int tehMapStepSelected, decimal? actualTemp, int? actualTime, decimal? actualPressure) =>
+
+            group.MapPut("/endBatch", async (int batchSelected, int tehMapStepSelected,
+     decimal? actualTemp, int? actualTime, decimal? actualPressure) =>
             {
                 AppMachineOperator appMachineOperator = new AppMachineOperator();
-                appMachineOperator.PutEndBatch(batchSelected, tehMapStepSelected, actualTemp, actualTime, actualPressure);
+                await appMachineOperator.PutEndBatch(batchSelected, tehMapStepSelected,
+                    actualTemp, actualTime, actualPressure);
                 return Results.Ok();
             });
-            
-            group.MapPost("/startBatch", (int batchSelected, int tehMapStepSelected, string comment) =>
+
+            group.MapPost("/startBatch", async (int batchSelected, int tehMapStepSelected, string? comment) =>
             {
                 AppMachineOperator appMachineOperator = new AppMachineOperator();
-                appMachineOperator.PostStartBatch(batchSelected, tehMapStepSelected, comment);
+                await appMachineOperator.PostStartBatch(batchSelected, tehMapStepSelected, comment ?? "");
                 return Results.Ok();
             });
 

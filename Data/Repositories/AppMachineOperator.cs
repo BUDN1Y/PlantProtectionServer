@@ -111,9 +111,13 @@ namespace PlantProtectionServer.Data.Repositories
         {
             try
             {
-                var batchStepExecutions = await context.BatchStepExecutions.Where(x => x.BatchId == batchId).ToListAsync();
-                var techMapStep = await context.TechMapSteps.ToListAsync();
+                var batchStepExecutions = await context.BatchStepExecutions.Where(x => x.BatchId == batchId).ToListAsync();             
                 var productionBatch = await context.ProductionBatches.FirstOrDefaultAsync(x => x.Id == batchId);
+
+                var techMapStep = await context.TechMapSteps
+    .Where(x => x.TechMapId == techMapId)
+    .OrderBy(x => x.StepNumber)
+    .ToListAsync();
                 var statusName = await context.Statuses.ToListAsync();
 
                 var batchStepExecutionsProcessed = batchStepExecutions
@@ -168,18 +172,21 @@ namespace PlantProtectionServer.Data.Repositories
             }
         }
 
-        public async void PutEndBatch(int batchId, int techMapStep, decimal? actualTemp, int? actualTime, decimal? actualPressure)
+        public async Task PutEndBatch(int batchId, int techMapStep, decimal? actualTemp, int? actualTime, decimal? actualPressure)
         {
             try
             {
-                var batchStepExecution = await context.BatchStepExecutions.FirstAsync(x => x.BatchId == batchId && x.TechStepId == techMapStep);
+                var batchStepExecution = await context.BatchStepExecutions
+                    .FirstAsync(x => x.BatchId == batchId && x.TechStepId == techMapStep);
+
                 batchStepExecution.StatusId = 33;
                 batchStepExecution.FinishedAt = DateTime.Now;
                 batchStepExecution.FinishedBy = 2;
                 batchStepExecution.ActualTemp = actualTemp;
                 batchStepExecution.ActualTime = actualTime;
+                batchStepExecution.ActualPressure = actualPressure;   
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -191,6 +198,15 @@ namespace PlantProtectionServer.Data.Repositories
         {
             try
             {
+                var exists = await context.BatchStepExecutions
+                    .AnyAsync(x => x.BatchId == batchId && x.TechStepId == techMapStep);
+
+                if (exists)
+                {
+                    Console.WriteLine("Шаг уже запущен");
+                    return;
+                }
+
                 var newBatchStepExecution = new ModelsDB.BatchStepExecution()
                 {
                     BatchId = batchId,
@@ -202,7 +218,6 @@ namespace PlantProtectionServer.Data.Repositories
                 };
 
                 context.BatchStepExecutions.Add(newBatchStepExecution);
-
                 await context.SaveChangesAsync();
             }
             catch (Exception ex)

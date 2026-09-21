@@ -40,13 +40,14 @@ namespace PlantProtectionServer
                       
 
             app.MapTechnologistEndpoints();
-            app.MapMachineOperatorEndpoints();          
+            app.MapMachineOperatorEndpoints();
+            app.MapTechnologistMobileEndpoints();
 
             app.MapGet("/", async (context) =>
             {
                 context.Response.ContentType = "text/html; charset=utf-8";
-                await context.Response.SendFileAsync("wwwroot/Html/main.html");
-                /* await context.Response.SendFileAsync("wwwroot/Html/index.html");*/
+                //await context.Response.SendFileAsync("wwwroot/Html/main.html");
+                await context.Response.SendFileAsync("wwwroot/Html/index.html");
                 //await context.Response.SendFileAsync("wwwroot/Html/programBatch.html");
 
             });
