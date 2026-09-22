@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PlantProtectionServer.Data.Context;
 using PlantProtectionServer.Models.Technologist.Product;
+using PlantProtectionServer.Models.MachineOperatorMobile;
 
 namespace PlantProtectionServer.Data.Repositories
 {
@@ -26,5 +27,30 @@ namespace PlantProtectionServer.Data.Repositories
                 isActive = p.IsActive
             }).FirstOrDefaultAsync();
         }
-    }
+
+        public async Task<List<ProductionBatch>> GetAllProductionBatch()
+        {
+            return await context.ProductionBatches
+                .Include(x => x.Status)
+                .Select(x => new ProductionBatch
+            {
+                id = x.Id,
+                batchNumber = x.BatchNumber,
+                orderId = x.OrderId,
+                productId = x.ProductId,
+                recipeVersionId = x.RecipeVersionId,
+                techMapVersionId = x.TechMapVersionId,
+                startDate = x.StartDate.ToString(),
+                endDate = x.EndDate.ToString(),
+                statusId = x.StatusId,
+                statusName = x.Status.Name,
+                currentStepId = x.CurrentStepId,
+                extruderProgramId = x.ExtruderProgramId,
+                createdAt = x.CreatedAt.ToString(),
+                updatedAt = x.UpdatedAt.ToString(),
+                labDecision = x.LabDecision,
+                labComment = x.LabComment
+    }).ToListAsync();
+        }
+    } 
 }

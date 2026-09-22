@@ -1,5 +1,6 @@
 ﻿using PlantProtectionServer.Data.Repositories;
 using PlantProtectionServer.Models.Technologist.Product;
+using PlantProtectionServer.Models.MachineOperatorMobile;
 
 namespace PlantProtectionServer.Endpoints
 {
@@ -12,12 +13,20 @@ namespace PlantProtectionServer.Endpoints
 
             group.MapGet("/authorization", async (string log, string pass) =>
             {
-                Console.WriteLine("Успешно");
-                AppMachineOperatorMobile appTechnologi = new AppMachineOperatorMobile();
-                DataUser? authorization = await appTechnologi.Authorization(log, pass);
+                Console.WriteLine("authorization Успешно");
+                AppMachineOperatorMobile appMachineOperatorMobile = new AppMachineOperatorMobile();
+                DataUser? authorization = await appMachineOperatorMobile.Authorization(log, pass);
                 return authorization;
             });
 
+
+            group.MapGet("productionBatch", async () =>
+            {
+                Console.WriteLine("prodictionBatch Успешно");
+                AppMachineOperatorMobile appMachineOperatorMobile = new AppMachineOperatorMobile();
+                var productionBatch = await appMachineOperatorMobile.GetAllProductionBatch();
+                return productionBatch;
+            });
             return group;
         }
     }
